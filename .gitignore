@@ -1,0 +1,8 @@
+*.root
+*.png
+*.pdf
+*.txt
+*.log
+CMSSW_15_1_0
+*_pycache_*
+*CrabWorkArea*
