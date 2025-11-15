@@ -53,6 +53,8 @@ TH1D *num_50_endcap = new TH1D("num_50_endcap","num_50_endcap",NPtBins,PtMin,PtM
 TH1D *r_50 = new TH1D("r_50","r_50",NPtBins,PtMin,PtMax);
 TH1D *r_50_endcap = new TH1D("r_50_endcap","r_50_endcap",NPtBins,PtMin,PtMax);
 
+TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
+
 
 
 // ==========================================================
@@ -62,8 +64,10 @@ TH1D *r_50_endcap = new TH1D("r_50_endcap","r_50_endcap",NPtBins,PtMin,PtMax);
 void triggerAnalysis_pho_mc(
     string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/PhotonQCD_pTMin20_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_QCDPhoton/251023_035328/0000/",
     string inputHLT = "", //"/afs/cern.ch/user/k/kdeverea/HLTClayton/CMSSW_15_1_0/src/workstation/HLT_emulation/scripts/PbPb/openHLTfiles/",
-    string output_base = "MCQCDPhoton",
-    int nfiles = -1
+    string output_base = "MCQCDPhoton30_100",
+    int nfiles = -1,
+    float minHiBin = 60.0,
+    float maxHiBin = 200.0
   ){
 
   std::cout << "running triggerAnalysis_pho_mc()" << std::endl;
@@ -332,9 +336,11 @@ void triggerAnalysis_pho_mc(
     HltTree->GetEntry(i_event);
     EventTree->GetEntry(i_event);
   	
+    h_hiBin->Fill(hiBin);
+
     // event cuts
     if(fabs(vz)>15.0) continue;
-    //if(hiBin>180) continue;	
+    if(hiBin < minHiBin || hiBin >= maxHiBin) continue;
 
     nphos += nPho;
 
@@ -608,15 +614,12 @@ void triggerAnalysis_pho_mc(
   leg->AddEntry(r_30,"HLT_HIGEDPhoton30_v16");
   leg->AddEntry(r_40,"HLT_HIGEDPhoton40_v16");
   leg->AddEntry(r_50,"HLT_HIGEDPhoton50_v16");
-  //leg->AddEntry(r_50,"HLT_PFJet110_v16");
-  //leg->AddEntry(r_120,"HLT_PFJet140_v35"); 
   //leg->SetBorderSize(0);
   r_20->Draw();
   leg->Draw();
   r_30->Draw("same");
   r_40->Draw("same");
   r_50->Draw("same");
-  //r_120->Draw("same");
 
   TLatex *la = new TLatex();
   la->SetTextFont(42);
@@ -624,8 +627,8 @@ void triggerAnalysis_pho_mc(
 
   la->DrawLatexNDC(0.22,0.92,"2025 Pythia8+Hydjet QCDPhoton");
   la->DrawLatexNDC(0.72,0.92,"no L1 emulation");
-  //la->DrawLatexNDC(0.6,0.69,"2025 Run 3 MC");
-  la->DrawLatexNDC(0.6,0.69,"Barrel: |#eta| < 1.442");
+  la->DrawLatexNDC(0.6,0.65,"Barrel: |#eta| < 1.442");
+  la->DrawLatexNDC(0.6,0.6,Form("%.0f%% - %.0f%%", minHiBin/2, maxHiBin/2));
 
   c1->SaveAs(Form("plots/TriggerEfficiency_pho_%s_barrel.png", output_base.c_str()));
 
@@ -661,8 +664,8 @@ void triggerAnalysis_pho_mc(
   la_endcap->SetTextSize(0.03);
   la_endcap->DrawLatexNDC(0.22,0.92,"2025 Pythia8+Hydjet QCDPhoton");
   la_endcap->DrawLatexNDC(0.72,0.92,"no L1 emulation");
-  //la_endcap->DrawLatexNDC(0.6,0.69,"2025 Run 3 MC");
-  la_endcap->DrawLatexNDC(0.6,0.69,"Endcap: 1.556 < |#eta| < 2.1");
+  la_endcap->DrawLatexNDC(0.6,0.65,"Endcap: 1.556 < |#eta| < 2.1");
+  la_endcap->DrawLatexNDC(0.6,0.6,Form("%.0f%% - %.0f%%", minHiBin/2, maxHiBin/2));
 
   c1_endcap->SaveAs(Form("plots/TriggerEfficiency_pho_%s_endcap.png", output_base.c_str()));
 
@@ -698,9 +701,28 @@ void triggerAnalysis_pho_mc(
 
   la2->DrawLatexNDC(0.22,0.92,"2025 Pythia8+Hydjet QCDPhoton");
   la2->DrawLatexNDC(0.72,0.92,"L1 emulation");
-  la2->DrawLatexNDC(0.6,0.69,"|#eta| < 1.442");
+  la2->DrawLatexNDC(0.6,0.65,"Barrel: |#eta| < 1.442");
+  la2->DrawLatexNDC(0.6,0.6,Form("%.0f%% - %.0f%%", minHiBin/2, maxHiBin/2));
 
   c2->SaveAs(Form("plots/TriggerEfficiency_pho_%s_L1.png", output_base.c_str()));
+
+
+  // ====== hiBin historogram simple ======
+  TCanvas *c3 = new TCanvas("c3","c3",700,600);
+  c3->cd();
+  TPad *p3 = new TPad("p3","p3",0,0,1,1);
+  p3->SetLeftMargin(0.13);
+  p3->SetBottomMargin(0.14);
+  p3->Draw();
+  p3->cd();
+  h_hiBin->SetTitle("");
+  h_hiBin->SetStats(0);
+  h_hiBin->GetXaxis()->SetTitleSize(0.05);
+  h_hiBin->GetYaxis()->SetTitleSize(0.05);
+  h_hiBin->GetXaxis()->SetTitle("hiBin");
+  h_hiBin->GetYaxis()->SetTitle("Counts");
+  h_hiBin->Draw();
+  c3->SaveAs(Form("plots/hiBin_pho_%s.png", output_base.c_str()));
 
 
   // =============== Save histograms ==================
