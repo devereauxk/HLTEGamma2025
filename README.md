@@ -12,11 +12,12 @@ git cms-merge-topic CmsHI:forest_CMSSW_15_1_X
 scram build -j4
 voms-proxy-init --voms cms --valid 168:00
 ```
-CRAB file to submit foresting jobs is at `forest_CRABConfig_Run3_PbPb_MC.py`. Change the input minAOD path and output parameters. Also change the Global Tag (GT) and Configuration in `forest_CMSSWConfig_Run3_PbPb_MC_miniAOD.py` to the most up-to-date choices. For HLT studies we need the forests to have the following information:
+CRAB file to submit foresting jobs is at `forest_CRABConfig_Run3_PbPb_MC.py`. Change the input minAOD path and output parameters. Also change the Global Tag (GT) and Configuration in `forest_CMSSWConfig_Run3_PbPb_MC_miniAOD.py` to the most up-to-date choices. For HLT studies ensure the forests to have the following information:
 ```
-hltanalysis
-hiEvtAnalyzer
-ggHiNtuplizer
+hltanalysis : info on L1 and HLT triggers that fire
+hiEvtAnalyzer : event-level information
+ggHiNtuplizer : electron and photon track information
+hltobject : info on objects that fire the HLT trigger
 ```
 
 2025 PbPb MC samples: https://docs.google.com/spreadsheets/d/1hnxPcfO3gXvGtVTpd9hHhg-AhlyECpGRMtRAf6NRXco/edit?gid=1414989721#gid=1414989721

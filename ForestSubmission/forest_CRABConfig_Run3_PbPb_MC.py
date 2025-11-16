@@ -5,11 +5,11 @@ username = getUsername()
 ###############################################################################
 # INPUT/OUTPUT SETTINGS
 
-jobTag = 'Run3_PbPb_2025MC_JpsiToEE'
+jobTag = 'Run3_PbPb_2025MC_ZToEE'
 # JPsiToEE
-input = '/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/fdamas-PAT_151X_mcRun3_2025_realistic_HI_v1-5249b5d2d214ceff3b59bef72e572410/USER'
+#input = '/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/fdamas-PAT_151X_mcRun3_2025_realistic_HI_v1-5249b5d2d214ceff3b59bef72e572410/USER'
 # ZToEE
-#input = '/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/fdamas-ZtoEE_PAT_151X_mcRun3_2025_realistic_HI_v1-81feeb1db1a253aa05da8c225ee26acc/USER'
+input = '/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/fdamas-ZtoEE_PAT_151X_mcRun3_2025_realistic_HI_v1-81feeb1db1a253aa05da8c225ee26acc/USER'
 # QCD Photon
 #input = '/PhotonQCD_pTMin20_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/fdamas-PAT_151X_mcRun3_2025_realistic_HI_v1-5249b5d2d214ceff3b59bef72e572410/USER'
 inputDatabase = 'phys03'

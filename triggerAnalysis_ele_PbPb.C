@@ -2,7 +2,7 @@ using namespace std;
 
 Float_t PtMin = 2.;
 Float_t PtMax = 110;
-Int_t NPtBins = 20;
+Int_t NPtBins = 50;
 
 Float_t etaMin = -5.0;
 Float_t etaMax = 5.0;
@@ -31,11 +31,6 @@ TH1D *rl1_7_endcap = new TH1D("rl1_7_endcap","rl1_7_endcap",NPtBins,PtMin,PtMax)
 TH1D *rl1_15_endcap = new TH1D("rl1_15_endcap","rl1_15_endcap",NPtBins,PtMin,PtMax);
 TH1D *rl1_21_endcap = new TH1D("rl1_21_endcap","rl1_21_endcap",NPtBins,PtMin,PtMax);
 
-TH1D *num_15 = new TH1D("num_15","num_15",NPtBins,PtMin,PtMax);
-TH1D *num_15_endcap = new TH1D("num_15_endcap","num_15_endcap",NPtBins,PtMin,PtMax);
-TH1D *r_15 = new TH1D("r_15","r_15",NPtBins,PtMin,PtMax);
-TH1D *r_15_endcap = new TH1D("r_15_endcap","r_15_endcap",NPtBins,PtMin,PtMax);
-
 TH1D *num_20 = new TH1D("num_20","num_20",NPtBins,PtMin,PtMax);
 TH1D *num_20_endcap = new TH1D("num_20_endcap","num_20_endcap",NPtBins,PtMin,PtMax);
 TH1D *r_20 = new TH1D("r_20","r_20",NPtBins,PtMin,PtMax);
@@ -61,76 +56,37 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 TH2D *h2_missedEtaPhi = new TH2D("h2_missedEtaPhi","h2_missedEtaPhi",NPhiBins,phiMin,phiMax,NEtaBins,etaMin,etaMax);
 
 
-
-unsigned long long keyFromRunLumiEvent(Int_t run,
-                                       Int_t lumi,
-                                       ULong64_t event)
-{
-  const unsigned long long runMult = 1;
-  const unsigned long long lumiMult = 1000000;
-  const unsigned long long evtMult = 10000000000;
-  const unsigned long long evtLimit = 10000000000;
-
-  unsigned long long key = 0;
-  if(event >= evtLimit){
-    std::cout << "RUNLUMIEVENTKEY WARNING : \'" << event
-              << "\' is greated that event limit 10^10. returning key 0"
-              << std::endl;
-    return key;
-  }
-
-  key += runMult* static_cast<unsigned long long>(run);
-  key += lumiMult*static_cast<unsigned long long>(lumi);
-  key += evtMult*event;
-
-  //std::cout << "key = " << key << std::endl;
-  
-  return key;
-  
-}
-
-
 // ==========================================================
 // main: trigger turn on curves for HLT electrons in MC
 // ==========================================================
 
-void triggerAnalysis_ele_mc(
+void triggerAnalysis_ele_PbPb(
 
-    // ZtoEE sample
-    //string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_ZToEE/251115_102359/0000/",
-    //string inputHLT = "", //"/afs/cern.ch/user/k/kdeverea/HLTClayton/CMSSW_15_1_0/src/workstation/HLT_emulation/scripts/PbPb/openHLTfiles/",
-    //string output_base = "MCZee0_100",
+    // PbPb data
+    string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
+    string output_base = "DataPbPb_run399499",
 
-    // JpsiToEE sample
-    string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_JpsiToEE/251113_150758/0000/",
-    string inputHLT = "",
-    string output_base = "MCJpsiToEE0_100",
-
-    int nfiles = 200,
+    int nfiles = -1,
     float minHiBin = 0.0,
     float maxHiBin = 200.0
   ){
 
-  std::cout << "running triggerAnalysis_ele_mc()" << std::endl;
+  std::cout << "running triggerAnalysis_ele_PbPb()" << std::endl;
   std::cout << "input forest directory = " << inputForest  << std::endl;
-  std::cout << "input HLT directory    = " << inputHLT  << std::endl;
   std::cout << "output tag             = " << output_base << std::endl;
 
   TChain *HltTree = new TChain("hltanalysis/HltTree");
   TChain *EventTree = new TChain("ggHiNtuplizer/EventTree");
   TChain *HiTree = new TChain("hiEvtAnalyzer/HiTree");
   
-  //TChain *Tree_HLT_HIEle30Gsf = new TChain("hltobject/HLT_HIEle30Gsf_v");
-  
   std::cout<< "Adding input files...";
 
   // forest files
   if (nfiles == -1) {
-    string this_forest_name = inputForest + "/HiForestMiniAOD_*";
+    string this_forest_name = inputForest + "/HiForest*.root";
     HltTree   ->Add(this_forest_name.c_str());
     EventTree ->Add(this_forest_name.c_str());
     HiTree    ->Add(this_forest_name.c_str());
-    //Tree_HLT_HIEle30Gsf ->Add(this_forest_name.c_str());
   }
   else {
     for(int i = 1; i <= nfiles; i++) {
@@ -138,14 +94,8 @@ void triggerAnalysis_ele_mc(
       HltTree   ->Add(this_forest_name.c_str());
       EventTree ->Add(this_forest_name.c_str());
       HiTree    ->Add(this_forest_name.c_str());
-      //Tree_HLT_HIEle30Gsf ->Add(this_forest_name.c_str());
     }
   }
-
-  // hlt files
-  //string this_hlt_name = inputHLT + "/*openHLT_Zee_*.root";
-  //Tree_HLT_HIEle20Gsf     ->Add(this_hlt_name.c_str());
-  //HltTree_emulated        ->Add(this_hlt_name.c_str());
 
   std::cout << "done" << std::endl;
 
@@ -157,7 +107,6 @@ void triggerAnalysis_ele_mc(
   UInt_t          run;
   Int_t           hiBin;
   Float_t         hiHF;
-  Float_t         pthat_weight;
   Float_t         vz;
   
   HiTree->SetBranchStatus("*",0);
@@ -166,7 +115,6 @@ void triggerAnalysis_ele_mc(
   HiTree->SetBranchStatus("run",1);
   HiTree->SetBranchStatus("hiBin",1);
   HiTree->SetBranchStatus("hiHF",1);
-  HiTree->SetBranchStatus("weight",1);
   HiTree->SetBranchStatus("vz",1);
 
   HiTree->SetBranchAddress("evt", &evt);
@@ -174,7 +122,6 @@ void triggerAnalysis_ele_mc(
   HiTree->SetBranchAddress("run", &run);
   HiTree->SetBranchAddress("hiBin", &hiBin);
   HiTree->SetBranchAddress("hiHF", &hiHF);
-  HiTree->SetBranchAddress("weight", &pthat_weight);
   HiTree->SetBranchAddress("vz", &vz);
 
 
@@ -183,7 +130,6 @@ void triggerAnalysis_ele_mc(
   Int_t           L1_SingleEG7;
   Int_t           L1_SingleEG15;
   Int_t           L1_SingleEG21;
-  Int_t           HLT_HIEle15Gsf;
   Int_t           HLT_HIEle20Gsf;
   Int_t           HLT_HIEle30Gsf;
   Int_t           HLT_HIEle40Gsf;
@@ -200,11 +146,10 @@ void triggerAnalysis_ele_mc(
   HltTree->SetBranchStatus("L1_SingleEG15_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG21_BptxAND", 1);
 
-  HltTree->SetBranchStatus("HLT_HIEle15Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle20Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle30Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle40Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle50Gsf_v16", 1);
+  HltTree->SetBranchStatus("HLT_HIEle20Gsf_v17", 1);
+  HltTree->SetBranchStatus("HLT_HIEle30Gsf_v17", 1);
+  HltTree->SetBranchStatus("HLT_HIEle40Gsf_v17", 1);
+  HltTree->SetBranchStatus("HLT_HIEle50Gsf_v17", 1);
 
   HltTree->SetBranchAddress("Event", &forest_Event);
   HltTree->SetBranchAddress("LumiBlock", &forest_LumiBlock);
@@ -214,42 +159,10 @@ void triggerAnalysis_ele_mc(
   HltTree->SetBranchAddress("L1_SingleEG15_BptxAND", &L1_SingleEG15);
   HltTree->SetBranchAddress("L1_SingleEG21_BptxAND", &L1_SingleEG21);
 
-  HltTree->SetBranchAddress("HLT_HIEle15Gsf_v16", &HLT_HIEle15Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle20Gsf_v16", &HLT_HIEle20Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle30Gsf_v16", &HLT_HIEle30Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle40Gsf_v16", &HLT_HIEle40Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle50Gsf_v16", &HLT_HIEle50Gsf);
-
-  // hlt emulated
-  /*
-  ULong64_t       hlt_Event;
-  Int_t           hlt_LumiBlock, hlt_Run;
-
-  HltTree_emulated->SetBranchStatus("*",0);     // disable all branches
-  HltTree_emulated->SetBranchStatus("Event", 1);
-  HltTree_emulated->SetBranchStatus("LumiBlock", 1);
-  HltTree_emulated->SetBranchStatus("Run", 1);
-
-  HltTree_emulated->SetBranchAddress("Event", &hlt_Event);
-  HltTree_emulated->SetBranchAddress("LumiBlock", &hlt_LumiBlock);
-  HltTree_emulated->SetBranchAddress("Run", &hlt_Run);
-  */
-
-  /*
-  // =============== HLT_HIEle30 Tree ===============
-  vector<float>           *Ele30Gsf_pt = nullptr;
-  vector<float>           *Ele30Gsf_eta = nullptr;
-  vector<float>           *Ele30Gsf_phi = nullptr;
-
-  Tree_HLT_HIEle30Gsf->SetBranchStatus("*",0);     // disable all branches
-  Tree_HLT_HIEle30Gsf->SetBranchStatus("pt", 1);
-  Tree_HLT_HIEle30Gsf->SetBranchStatus("eta", 1);
-  Tree_HLT_HIEle30Gsf->SetBranchStatus("phi", 1);
-
-  Tree_HLT_HIEle30Gsf->SetBranchAddress("pt", &Ele30Gsf_pt);
-  Tree_HLT_HIEle30Gsf->SetBranchAddress("eta", &Ele30Gsf_eta);
-  Tree_HLT_HIEle30Gsf->SetBranchAddress("phi", &Ele30Gsf_phi);
-  */
+  HltTree->SetBranchAddress("HLT_HIEle20Gsf_v17", &HLT_HIEle20Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle30Gsf_v17", &HLT_HIEle30Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle40Gsf_v17", &HLT_HIEle40Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle50Gsf_v17", &HLT_HIEle50Gsf);
 
 
   // ================= Event Tree =================
@@ -279,18 +192,12 @@ void triggerAnalysis_ele_mc(
   EventTree->SetBranchStatus("lumis",1);
 
   // mc branches
-  EventTree->SetBranchStatus("mcPID",1);
-  EventTree->SetBranchStatus("mcMomPID",1);
-  EventTree->SetBranchStatus("mcPt",1);
-  EventTree->SetBranchStatus("mcEta",1);
-  EventTree->SetBranchStatus("mcPhi",1);
 
   EventTree->SetBranchStatus("nEle",1);
   EventTree->SetBranchStatus("elePt",1);
   EventTree->SetBranchStatus("eleEta",1);
   EventTree->SetBranchStatus("eleHoverE",1);
   EventTree->SetBranchStatus("elePhi",1);
-  EventTree->SetBranchStatus("ele_genMatchedIndex",1);
 
   EventTree->SetBranchStatus("eleSigmaIEtaIEta_2012",1);
   EventTree->SetBranchStatus("eledEtaSeedAtVtx",1);
@@ -300,13 +207,6 @@ void triggerAnalysis_ele_mc(
   EventTree->SetBranchStatus("eleIP3D",1);
   EventTree->SetBranchStatus("eleSCEta",1);
   EventTree->SetBranchStatus("eleSCRawEn",1);
-
-  EventTree->SetBranchAddress("mcPID", &mcPID);
-  EventTree->SetBranchAddress("mcMomPID", &mcMomPID);
-  EventTree->SetBranchAddress("mcPt", &mcPt);
-  EventTree->SetBranchAddress("mcEta", &mcEta);
-  EventTree->SetBranchAddress("mcPhi", &mcPhi);
-  EventTree->SetBranchAddress("ele_genMatchedIndex", &ele_genMatchedIndex);
 
   EventTree->SetBranchAddress("nEle", &nEle);
   EventTree->SetBranchAddress("elePt", &elePt);
@@ -340,7 +240,6 @@ void triggerAnalysis_ele_mc(
   int neles = 0;
   int npass_leading = 0;
   int npass_trkrcut = 0;
-  int npass_genmatch = 0;
   int npass_l1 = 0;
   int npass_trigger = 0;
   for (ULong64_t i_event = 0; i_event < HltTree->GetEntries(); ++i_event){
@@ -351,8 +250,6 @@ void triggerAnalysis_ele_mc(
     HltTree->GetEntry(i_event);
     EventTree->GetEntry(i_event);
 
-    //Tree_HLT_HIEle30Gsf->GetEntry(i_event);
-
     h_hiBin->Fill(hiBin);
   	
     // event cuts
@@ -362,10 +259,10 @@ void triggerAnalysis_ele_mc(
     neles += nEle;
 
     // ========== skip duplicate reco events ===========
-    // TODO
+    // NO
 
     // ===== find HLT emulation match of reco event =====
-    // TODO
+    // NO
 
     // ============= find leading electron ==============
     // take highest reco pT as leading electron
@@ -416,102 +313,12 @@ void triggerAnalysis_ele_mc(
     }
     else continue;
 
+
     npass_trkrcut++;
 
 
     // =============== match to gen level ===============
-    int i_genleading = -1;
-    float maxPt_gen = 0;
-    int i_genmatch = -1;
-    float maxPt_genmatch = 0;
-    
-    // loop over gen
-    // 1) find leading gen-level electron
-    // 2) find best gen-level electron match to leading reco-level electron
-    for(Int_t j_track = 0; j_track < (int)mcPID->size(); j_track++){
-
-      // gen electron selection
-      if( abs(mcPID->at(j_track)) != 11) continue;
-
-      // compare with previous leading candidate
-      if( mcPt->at(j_track) > maxPt_gen ) {
-        maxPt_gen = mcPt->at(j_track);
-        i_genleading = j_track;
-      }
-
-      // gen-reco matching
-      // deltaR requirement
-      float dEta = eleEta->at(i_leading) - mcEta->at(j_track);
-      float dPhi = elePhi->at(i_leading) - mcPhi->at(j_track);
-      float dR = sqrt( dEta*dEta + dPhi*dPhi );
-
-      float relativeDiffpT = fabs( elePt->at(i_leading) - mcPt->at(j_track) ) / mcPt->at(j_track);
-
-      if (dR < 0.0225 && relativeDiffpT < 0.5) {  // same requirement as implemented in ggHiNtuplizer
-        if( mcPt->at(j_track) > maxPt_genmatch ) {
-          maxPt_genmatch = mcPt->at(j_track);
-          i_genmatch = j_track;
-        }
-      }
-    }
-    if (i_genleading == -1 || i_genleading != i_genmatch) continue;
-    //cout<<"i_genleading: "<<i_genleading<<" i_genmatch: "<<i_genmatch<<endl;
-
-    /*
-    int i_genmatch = ele_genMatchedIndex->at(i_leading);
-    int i_genleading = -1;
-    float maxPt_gen = 0;
-    
-    // loop over gen
-    for(Int_t j_track = 0; j_track < (int)mcPID->size(); j_track++){
-
-      // gen electron selection
-      if( abs(mcPID->at(j_track)) != 11 ) continue;
-      
-      // compare with previous leading candidate
-      if( mcPt->at(j_track) > maxPt_gen ) {
-        maxPt_gen = mcPt->at(j_track);
-        i_genleading = j_track;
-      }
-
-    }
-    if (i_genleading == -1 || i_genleading != i_genmatch) continue;
-    */
-    
-    /*
-    if (HLT_HIEle30Gsf) {
-      cout<<endl;
-      cout<<"entry "<<i_event<<" run "<<run<<" lumi "<<lumi<<" event "<<evt<<endl;
-      cout<<"leading reco (pt, eta, phi): "<<elePt->at(i_leading)<<" "<<eleEta->at(i_leading)<<" "<<elePhi->at(i_leading)<<endl;
-      if (HLT_HIEle30Gsf) {
-        for(int j=0; j<Ele30Gsf_pt->size(); j++) {
-          cout<<"          -> (pt, eta, phi): "<<Ele30Gsf_pt->at(j)<<" "<<Ele30Gsf_eta->at(j)<<" "<<Ele30Gsf_phi->at(j)<<endl;
-        }
-      }
-    }
-      */
-    
-    npass_genmatch++;
-
-    /*
-    float maxPt_30 = maxPt;
-    float minDR = 999;
-    if(L1_SingleEG15 && HLT_HIEle30Gsf) {
-      float i_hltobjmatch = -1;
-      for (int i = 0; i<Ele30Gsf_pt->size(); i++) {
-        float deta = eleEta->at(i_leading) - Ele30Gsf_eta->at(i);
-        float dphi = elePhi->at(i_leading) - Ele30Gsf_phi->at(i);
-        float dR = sqrt(deta*deta + dphi*dphi);
-        if (dR < minDR) {
-          minDR = dR;
-          i_hltobjmatch = i;
-        }
-      }
-      //if (Ele30Gsf_pt->size() < 2) continue;
-      
-      //maxPt_30 = Ele30Gsf_pt->at(i_hltobjmatch);
-    }
-      */
+    // NO
 
     // =============== fill histograms ================
 
@@ -531,8 +338,6 @@ void triggerAnalysis_ele_mc(
       if(L1_SingleEG21) l1_21->Fill(maxPt, weight);
 
       // fill numerator histograms
-      if(HLT_HIEle15Gsf) num_15->Fill(maxPt, weight);
-
       if(HLT_HIEle20Gsf) {
         num_20->Fill(maxPt, weight);
         npass_trigger++;
@@ -544,7 +349,7 @@ void triggerAnalysis_ele_mc(
 
       if(HLT_HIEle50Gsf) num_50->Fill(maxPt, weight);
 
-      if(L1_SingleEG15 && !HLT_HIEle30Gsf && maxPt > 35) {
+      if(L1_SingleEG7 && !HLT_HIEle20Gsf) {
         h2_missedEtaPhi->Fill(elePhi->at(i_leading), eleEta->at(i_leading));
       }
 
@@ -563,8 +368,6 @@ void triggerAnalysis_ele_mc(
       if(L1_SingleEG21) l1_21_endcap->Fill(maxPt, weight);
 
       // fill numerator histograms
-      if(HLT_HIEle15Gsf) num_15_endcap->Fill(maxPt, weight);
-
       if(HLT_HIEle20Gsf) {
         num_20_endcap->Fill(maxPt, weight);
       }
@@ -584,7 +387,6 @@ void triggerAnalysis_ele_mc(
   std::cout << "neles = " << neles << std::endl;
   std::cout << "npass_leading = " << npass_leading  << std::endl;
   std::cout << "npass_trkrcut = " << npass_trkrcut  << std::endl;
-  std::cout << "npass_genmatch = " << npass_genmatch  << std::endl;
   std::cout << "npass_trigger = " << npass_trigger  << std::endl;
 
   /*
@@ -594,7 +396,6 @@ void triggerAnalysis_ele_mc(
   r_50->Divide(num_50,denom,1,1,"B");
   */
 
-  r_15->Divide(num_15,l1_7,1,1,"B");
   r_20->Divide(num_20,l1_15,1,1,"B");
   r_30->Divide(num_30,l1_15,1,1,"B");
   r_40->Divide(num_40,l1_21,1,1,"B");
@@ -603,65 +404,54 @@ void triggerAnalysis_ele_mc(
   rl1_7->Divide(l1_7,denom,1,1,"B");
   rl1_15->Divide(l1_15,denom,1,1,"B");
   rl1_21->Divide(l1_21,denom,1,1,"B");
-  
-  r_15_endcap->Divide(num_15_endcap,l1_7_endcap,1,1,"B");
+
   r_20_endcap->Divide(num_20_endcap,l1_15_endcap,1,1,"B");
   r_30_endcap->Divide(num_30_endcap,l1_15_endcap,1,1,"B");
   r_40_endcap->Divide(num_40_endcap,l1_21_endcap,1,1,"B");
   r_50_endcap->Divide(num_50_endcap,l1_21_endcap,1,1,"B");
 
-  r_15->SetLineColor(kOrange+7);
   r_20->SetLineColor(kRed-4);
   r_30->SetLineColor(kBlue-4);
   r_40->SetLineColor(kGreen+2);
   r_50->SetLineColor(kMagenta-9);
-  r_15_endcap->SetLineColor(kOrange+7);
   r_20_endcap->SetLineColor(kRed-4);
   r_30_endcap->SetLineColor(kBlue-4);
   r_40_endcap->SetLineColor(kGreen+2);
   r_50_endcap->SetLineColor(kMagenta-9);
 
-  r_15->SetMarkerColor(kOrange+7);
   r_20->SetMarkerColor(kRed-4);
   r_30->SetMarkerColor(kBlue-4);
   r_40->SetMarkerColor(kGreen+2);
   r_50->SetMarkerColor(kMagenta-9);
-  r_15_endcap->SetMarkerColor(kOrange+7);
   r_20_endcap->SetMarkerColor(kRed-4);
   r_30_endcap->SetMarkerColor(kBlue-4);
   r_40_endcap->SetMarkerColor(kGreen+2);
   r_50_endcap->SetMarkerColor(kMagenta-9);
 
   double line_width = 1.8;
-  r_15->SetLineWidth(line_width);
   r_20->SetLineWidth(line_width);
   r_30->SetLineWidth(line_width);
   r_40->SetLineWidth(line_width);
   r_50->SetLineWidth(line_width);
-  r_15_endcap->SetLineWidth(line_width);
   r_20_endcap->SetLineWidth(line_width);
   r_30_endcap->SetLineWidth(line_width);
   r_40_endcap->SetLineWidth(line_width);
   r_50_endcap->SetLineWidth(line_width);
 
   double marker_size = 1.6;
-  r_15->SetMarkerSize(marker_size);
   r_20->SetMarkerSize(marker_size);
   r_30->SetMarkerSize(marker_size);
   r_40->SetMarkerSize(marker_size);
   r_50->SetMarkerSize(marker_size);
-  r_15_endcap->SetMarkerSize(marker_size);
   r_20_endcap->SetMarkerSize(marker_size);
   r_30_endcap->SetMarkerSize(marker_size);
   r_40_endcap->SetMarkerSize(marker_size);
   r_50_endcap->SetMarkerSize(marker_size);
     
-  r_15->SetMarkerStyle(20);
   r_20->SetMarkerStyle(20);
   r_30->SetMarkerStyle(21);
   r_40->SetMarkerStyle(22);
   r_50->SetMarkerStyle(23);
-  r_15_endcap->SetMarkerStyle(20);
   r_20_endcap->SetMarkerStyle(20);
   r_30_endcap->SetMarkerStyle(21);
   r_40_endcap->SetMarkerStyle(22);
@@ -703,18 +493,16 @@ void triggerAnalysis_ele_mc(
   r_20->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   r_20->GetYaxis()->SetTitle("Trigger efficiency");
   TLegend *leg = new TLegend(0.55,0.3,0.88,0.5);
-  leg->AddEntry(r_15,"HLT_HIEle15Gsf_v16");
-  leg->AddEntry(r_20,"HLT_HIEle20Gsf_v16");
-  leg->AddEntry(r_30,"HLT_HIEle30Gsf_v16");
-  leg->AddEntry(r_40,"HLT_HIEle40Gsf_v16");
-  leg->AddEntry(r_50,"HLT_HIEle50Gsf_v16");
+  leg->AddEntry(r_20,"HLT_HIEle20Gsf_v17");
+  leg->AddEntry(r_30,"HLT_HIEle30Gsf_v17");
+  leg->AddEntry(r_40,"HLT_HIEle40Gsf_v17");
+  leg->AddEntry(r_50,"HLT_HIEle50Gsf_v17");
   //leg->SetBorderSize(0);
   r_20->Draw();
   leg->Draw();
   r_30->Draw("same");
   r_40->Draw("same");
   r_50->Draw("same");
-  r_15->Draw("same");
 
   TLatex *la = new TLatex();
   la->SetTextFont(42);
@@ -728,7 +516,7 @@ void triggerAnalysis_ele_mc(
   c1->SaveAs(Form("plots/TriggerEfficiency_ele_%s_barrel.png", output_base.c_str()));
 
 
-  // =============== Fig HLT (no L1 emulation) ENCAP ==================
+  // =============== Fig HLT (no L1 emulation) BARREL ==================
   TCanvas *c1_endcap = new TCanvas("c1_endcap","c1_endcap",700,600);
   c1_endcap->cd();
   TPad *p1_endcap = new TPad("p1_endcap","p1_endcap",0,0,1,1);
@@ -743,10 +531,10 @@ void triggerAnalysis_ele_mc(
   r_20_endcap->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   r_20_endcap->GetYaxis()->SetTitle("Trigger efficiency");
   TLegend *leg_endcap = new TLegend(0.55,0.3,0.88,0.5);
-  leg_endcap->AddEntry(r_20_endcap,"HLT_HIEle20Gsf_v16");
-  leg_endcap->AddEntry(r_30_endcap,"HLT_HIEle30Gsf_v16");
-  leg_endcap->AddEntry(r_40_endcap,"HLT_HIEle40Gsf_v16");
-  leg_endcap->AddEntry(r_50_endcap,"HLT_HIEle50Gsf_v16");
+  leg_endcap->AddEntry(r_20_endcap,"HLT_HIEle20Gsf_v17");
+  leg_endcap->AddEntry(r_30_endcap,"HLT_HIEle30Gsf_v17");
+  leg_endcap->AddEntry(r_40_endcap,"HLT_HIEle40Gsf_v17");
+  leg_endcap->AddEntry(r_50_endcap,"HLT_HIEle50Gsf_v17");
   //leg_endcap->SetBorderSize(0);
   r_20_endcap->Draw();
   leg_endcap->Draw();

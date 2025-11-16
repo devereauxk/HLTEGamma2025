@@ -86,8 +86,8 @@ process.load('HeavyIonsAnalysis.EventAnalysis.skimanalysis_cfi')
 process.load('HeavyIonsAnalysis.EventAnalysis.hltobject_cfi')
 process.load('HeavyIonsAnalysis.EventAnalysis.l1object_cfi')
 
-#from HeavyIonsAnalysis.EventAnalysis.hltobject_cfi import trigger_list_mc
-#process.hltobject.triggerNames = trigger_list_mc
+from HeavyIonsAnalysis.EventAnalysis.hltobject_cfi import trigger_list_mc
+process.hltobject.triggerNames = trigger_list_mc
 
 ################################
 # electrons, photons, muons
@@ -121,7 +121,7 @@ process.forest = cms.Path(
     process.HiForestInfo +
     process.centralityBin +
     process.hltanalysis +
-#    process.hltobject +
+    process.hltobject +
 #    process.l1object +
     process.trackSequencePbPb +
 #    process.particleFlowAnalyser +
