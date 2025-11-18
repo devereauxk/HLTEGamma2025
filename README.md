@@ -52,13 +52,14 @@ Run with `root -l -q -b scriptname.C`.
 The scripts have inputs
 ```
 inputForest : path to forests you made in the Foresting step
+inputText : path to text file, each line of which is a forest path to analyze
 inputHLT : path to HLT emulation files for matching to forests [not implemented right now]
 output_base : name tag to distinguish outputs
 nfiles : total number of forest files to process
 minHiBin : minimum centrality cut, multiply percentage by 2, for example 30% -> minHiBin=60
 maxHiBin : maximum centrality cut  
 ```
-The scripts should produce turn-on curve plots for electron/photon HLT performance and L1 performance in the given centrality bin, storing plots to `plots/` and histograms to `output/`.
+The scripts should produce turn-on curve plots for electron/photon HLT performance and L1 performance in the given centrality bin, storing plots to `plots/` and histograms to `output/`. Paths to forests located across directories and subdirectories can be complied into a text file (for use as `inputText`), using the `get-forest-paths.sh` script which collects the paths of every `*.root` file recurively in a given directory.
 
 The HLT paths studied, L1 paths,  quality cuts, Gen-matching criteria, HLT emulation matching criteria, etc. can be modified within the scripts.
 

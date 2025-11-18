@@ -3,6 +3,7 @@
 *.pdf
 *.txt
 *.log
+*.err
 CMSSW_15_1_0
 *_pycache_*
 *CrabWorkArea*

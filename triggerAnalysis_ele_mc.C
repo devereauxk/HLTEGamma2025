@@ -2,7 +2,7 @@ using namespace std;
 
 Float_t PtMin = 2.;
 Float_t PtMax = 110;
-Int_t NPtBins = 20;
+Int_t NPtBins = 35;
 
 Float_t etaMin = -5.0;
 Float_t etaMax = 5.0;
@@ -96,17 +96,27 @@ unsigned long long keyFromRunLumiEvent(Int_t run,
 
 void triggerAnalysis_ele_mc(
 
-    // ZtoEE sample
+    // 2025 ZtoEE sample
     //string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_ZToEE/251115_102359/0000/",
     //string inputHLT = "", //"/afs/cern.ch/user/k/kdeverea/HLTClayton/CMSSW_15_1_0/src/workstation/HLT_emulation/scripts/PbPb/openHLTfiles/",
     //string output_base = "MCZee0_100",
 
-    // JpsiToEE sample
-    string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_JpsiToEE/251113_150758/0000/",
-    string inputHLT = "",
-    string output_base = "MCJpsiToEE0_100",
+    // 2025 JpsiToEE sample
+    //string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_JpsiToEE/251113_150758/0000/",
+    //string inputHLT = "",
+    //string output_base = "MCJpsiToEE0_100",
 
-    int nfiles = 200,
+    // 2024 ZtoEE sample
+    //string inputForest = "/eos/cms/store/group/phys_heavyions/prdas/EGamma/Run3_PbPb_2024_MC/Ze10e10/Embedded/Pythia8_Embedded_Ze10e10_TuneCP5_2024/crab_20241026_145435/241026_125438/0000",
+    //string inputHLT = "",
+    //string output_base = "2024MCZee0_100",
+
+    // 2024 ZtoEE sample, noembedding
+    string inputForest = "/eos/cms/store/group/phys_heavyions/prdas/EGamma/Run3_PbPb_2024_MC/Ze10e10/NoEmbedding/Pythia8_Embedded_Ze10e10_TuneCP5_2024/crab_20241026_145054/241026_125057/0000",
+    string inputHLT = "",
+    string output_base = "2024MCZeeNoembedding0_100",
+
+    int nfiles = -1,
     float minHiBin = 0.0,
     float maxHiBin = 200.0
   ){
@@ -120,7 +130,7 @@ void triggerAnalysis_ele_mc(
   TChain *EventTree = new TChain("ggHiNtuplizer/EventTree");
   TChain *HiTree = new TChain("hiEvtAnalyzer/HiTree");
   
-  //TChain *Tree_HLT_HIEle30Gsf = new TChain("hltobject/HLT_HIEle30Gsf_v");
+  TChain *Tree_HLT_HIEle30Gsf = new TChain("hltobject/HLT_HIEle30Gsf_v");
   
   std::cout<< "Adding input files...";
 
@@ -200,11 +210,11 @@ void triggerAnalysis_ele_mc(
   HltTree->SetBranchStatus("L1_SingleEG15_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG21_BptxAND", 1);
 
-  HltTree->SetBranchStatus("HLT_HIEle15Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle20Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle30Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle40Gsf_v16", 1);
-  HltTree->SetBranchStatus("HLT_HIEle50Gsf_v16", 1);
+  HltTree->SetBranchStatus("HLT_HIEle15Gsf_v13", 1);
+  HltTree->SetBranchStatus("HLT_HIEle20Gsf_v13", 1);
+  HltTree->SetBranchStatus("HLT_HIEle30Gsf_v13", 1);
+  HltTree->SetBranchStatus("HLT_HIEle40Gsf_v13", 1);
+  HltTree->SetBranchStatus("HLT_HIEle50Gsf_v13", 1);
 
   HltTree->SetBranchAddress("Event", &forest_Event);
   HltTree->SetBranchAddress("LumiBlock", &forest_LumiBlock);
@@ -214,11 +224,11 @@ void triggerAnalysis_ele_mc(
   HltTree->SetBranchAddress("L1_SingleEG15_BptxAND", &L1_SingleEG15);
   HltTree->SetBranchAddress("L1_SingleEG21_BptxAND", &L1_SingleEG21);
 
-  HltTree->SetBranchAddress("HLT_HIEle15Gsf_v16", &HLT_HIEle15Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle20Gsf_v16", &HLT_HIEle20Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle30Gsf_v16", &HLT_HIEle30Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle40Gsf_v16", &HLT_HIEle40Gsf);
-  HltTree->SetBranchAddress("HLT_HIEle50Gsf_v16", &HLT_HIEle50Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle15Gsf_v13", &HLT_HIEle15Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle20Gsf_v13", &HLT_HIEle20Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle30Gsf_v13", &HLT_HIEle30Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle40Gsf_v13", &HLT_HIEle40Gsf);
+  HltTree->SetBranchAddress("HLT_HIEle50Gsf_v13", &HLT_HIEle50Gsf);
 
   // hlt emulated
   /*
@@ -235,8 +245,9 @@ void triggerAnalysis_ele_mc(
   HltTree_emulated->SetBranchAddress("Run", &hlt_Run);
   */
 
-  /*
+  
   // =============== HLT_HIEle30 Tree ===============
+  /*
   vector<float>           *Ele30Gsf_pt = nullptr;
   vector<float>           *Ele30Gsf_eta = nullptr;
   vector<float>           *Ele30Gsf_phi = nullptr;
@@ -267,6 +278,7 @@ void triggerAnalysis_ele_mc(
   vector<float>   *eleIP3D = nullptr;
   vector<float>   *eleSCEta = nullptr;
   vector<float>   *eleSCRawEn = nullptr;
+  vector<int>     *mcStatus = nullptr;
   vector<int>     *mcPID = nullptr;
   vector<int>     *mcMomPID = nullptr;
   vector<float>   *mcPt = nullptr;
@@ -279,6 +291,7 @@ void triggerAnalysis_ele_mc(
   EventTree->SetBranchStatus("lumis",1);
 
   // mc branches
+  EventTree->SetBranchStatus("mcStatus",1);
   EventTree->SetBranchStatus("mcPID",1);
   EventTree->SetBranchStatus("mcMomPID",1);
   EventTree->SetBranchStatus("mcPt",1);
@@ -290,7 +303,7 @@ void triggerAnalysis_ele_mc(
   EventTree->SetBranchStatus("eleEta",1);
   EventTree->SetBranchStatus("eleHoverE",1);
   EventTree->SetBranchStatus("elePhi",1);
-  EventTree->SetBranchStatus("ele_genMatchedIndex",1);
+  //EventTree->SetBranchStatus("ele_genMatchedIndex",1);
 
   EventTree->SetBranchStatus("eleSigmaIEtaIEta_2012",1);
   EventTree->SetBranchStatus("eledEtaSeedAtVtx",1);
@@ -301,12 +314,13 @@ void triggerAnalysis_ele_mc(
   EventTree->SetBranchStatus("eleSCEta",1);
   EventTree->SetBranchStatus("eleSCRawEn",1);
 
+  EventTree->SetBranchAddress("mcStatus", &mcStatus);
   EventTree->SetBranchAddress("mcPID", &mcPID);
   EventTree->SetBranchAddress("mcMomPID", &mcMomPID);
   EventTree->SetBranchAddress("mcPt", &mcPt);
   EventTree->SetBranchAddress("mcEta", &mcEta);
   EventTree->SetBranchAddress("mcPhi", &mcPhi);
-  EventTree->SetBranchAddress("ele_genMatchedIndex", &ele_genMatchedIndex);
+  //EventTree->SetBranchAddress("ele_genMatchedIndex", &ele_genMatchedIndex);
 
   EventTree->SetBranchAddress("nEle", &nEle);
   EventTree->SetBranchAddress("elePt", &elePt);
@@ -339,8 +353,9 @@ void triggerAnalysis_ele_mc(
   int n_reco = HltTree-> GetEntries();
   int neles = 0;
   int npass_leading = 0;
-  int npass_trkrcut = 0;
   int npass_genmatch = 0;
+  int npass_hltmatch = 0;
+  int npass_trkrcut = 0;
   int npass_l1 = 0;
   int npass_trigger = 0;
   for (ULong64_t i_event = 0; i_event < HltTree->GetEntries(); ++i_event){
@@ -361,11 +376,50 @@ void triggerAnalysis_ele_mc(
 
     neles += nEle;
 
-    // ========== skip duplicate reco events ===========
+    // ============ skip duplicate reco events =============
     // TODO
 
-    // ===== find HLT emulation match of reco event =====
+    // ======= find HLT emulation match of reco event =======
     // TODO
+
+    // ============= match all recos to gen level ============
+    // unmatched index = -1
+    vector<int> ele_genMatchedIndex;
+    
+    // loop over reco
+    for(Int_t j_track = 0; j_track < elePt->size(); j_track++){
+
+      float minDR = 0.3;
+      float currentMaxPt = -1;
+      int matchedIndex = -1;
+
+      // loop over gen
+      for(Int_t i_gen = 0; i_gen < mcPt->size(); i_gen++) {
+
+        // match only to electrons from Z decay
+        if (abs(mcPID->at(i_gen)) != 11) continue;
+        //if (abs(mcMomPID->at(j_track)) != 23) continue;
+
+        // deltaR requirement
+        float dEta = eleEta->at(j_track) - mcEta->at(i_gen);
+        float dPhi = elePhi->at(j_track) - mcPhi->at(i_gen);
+        if (dPhi > TMath::Pi()) dPhi -= TMath::Pi();
+        float dR = sqrt( dEta*dEta + dPhi*dPhi );
+
+        float relativePtDiff = fabs(elePt->at(j_track) - mcPt->at(i_gen)) / mcPt->at(i_gen);
+
+        if (dR < minDR) {
+          minDR = dR;
+          matchedIndex = i_gen;
+        }
+
+      }
+
+      ele_genMatchedIndex.push_back(matchedIndex);
+
+    }
+    npass_genmatch++;
+
 
     // ============= find leading electron ==============
     // take highest reco pT as leading electron
@@ -373,10 +427,28 @@ void triggerAnalysis_ele_mc(
     int i_leading = -1;
     
     // loop over reco
-    for(Int_t i_track = 0; i_track < nEle; i_track++){
+    for(Int_t i_track = 0; i_track < elePt->size(); i_track++){
+
+      // check if matches to hltobject
+      /*
+      bool hlt_matched = false;
+      for(Int_t i_hlt = 0; i_hlt < Ele30Gsf_pt->size(); i_hlt++) {
+        // deltaR requirement
+        float dEta = eleEta->at(i_track) - Ele30Gsf_eta->at(i_hlt);
+        float dPhi = elePhi->at(i_track) - Ele30Gsf_phi->at(i_hlt);
+        if (dPhi > TMath::Pi()) dPhi -= TMath::Pi();
+        float dR = sqrt( dEta*dEta + dPhi*dPhi );
+
+        if (dR < 0.5) {
+          hlt_matched = true;
+          break;
+        }
+      }
+        */
+
 
       // compare with previous leading candidate
-      if(elePt->at(i_track) > maxPt) { // find the leading elePt in the event
+      if(elePt->at(i_track) > maxPt && ele_genMatchedIndex[i_track] != -1) { // find the leading matched elePt in the event
         maxPt = elePt->at(i_track);
         i_leading = i_track;
       }
@@ -384,6 +456,7 @@ void triggerAnalysis_ele_mc(
     }
     if (i_leading == -1) continue;
     npass_leading++;
+
 
     // ============= apply track rejection =============
     bool isBarrel = false;
@@ -393,25 +466,25 @@ void triggerAnalysis_ele_mc(
 
     // barrel cut
     if (abs(eleEta->at(i_leading)) < 1.442) {
-      if (eleMissHits->at(i_leading) > 3)                 continue;
+      if (eleMissHits->at(i_leading) > 1)                 continue;
       if (eleIP3D->at(i_leading) > 0.03)                  continue;
-      if (eleSigmaIEtaIEta_2012->at(i_leading) > 0.012)   continue;
-      if (eledEtaSeedAtVtx->at(i_leading) > 0.0037)       continue;
-      if (eledPhiAtVtx->at(i_leading) > 0.1280)           continue;
-      if (eleEoverPInv->at(i_leading) > 0.1065)           continue;
-      if (eleHoverE->at(i_leading) > 0.13)                continue;
+      if (eleSigmaIEtaIEta_2012->at(i_leading) > 0.0135)   continue;
+      if (eledEtaSeedAtVtx->at(i_leading) > 0.0038)       continue;
+      if (eledPhiAtVtx->at(i_leading) > 0.0376)           continue;
+      if (eleEoverPInv->at(i_leading) > 0.0177)           continue;
+      if (eleHoverE->at(i_leading) > 0.55)                continue;
       isBarrel = true;
     }
 
     // endcap cut
     else if (abs(eleEta->at(i_leading)) > 1.556 && abs(eleEta->at(i_leading)) < 2.1) {
-      if (eleMissHits->at(i_leading) > 3)                 continue;
+      if (eleMissHits->at(i_leading) > 1)                 continue;
       if (eleIP3D->at(i_leading) > 0.03)                  continue;
-      if (eleSigmaIEtaIEta_2012->at(i_leading) > 0.0376)  continue;
+      if (eleSigmaIEtaIEta_2012->at(i_leading) > 0.045)  continue;
       if (eledEtaSeedAtVtx->at(i_leading) > 0.0074)       continue;
       if (eledPhiAtVtx->at(i_leading) > 0.2085)           continue;
       if (eleEoverPInv->at(i_leading) > 0.1138)           continue;
-      if (eleHoverE->at(i_leading) > 0.14)                continue;
+      if (eleHoverE->at(i_leading) > 0.55)                continue;
       isEndcap = true;
     }
     else continue;
@@ -419,103 +492,9 @@ void triggerAnalysis_ele_mc(
     npass_trkrcut++;
 
 
-    // =============== match to gen level ===============
-    int i_genleading = -1;
-    float maxPt_gen = 0;
-    int i_genmatch = -1;
-    float maxPt_genmatch = 0;
-    
-    // loop over gen
-    // 1) find leading gen-level electron
-    // 2) find best gen-level electron match to leading reco-level electron
-    for(Int_t j_track = 0; j_track < (int)mcPID->size(); j_track++){
-
-      // gen electron selection
-      if( abs(mcPID->at(j_track)) != 11) continue;
-
-      // compare with previous leading candidate
-      if( mcPt->at(j_track) > maxPt_gen ) {
-        maxPt_gen = mcPt->at(j_track);
-        i_genleading = j_track;
-      }
-
-      // gen-reco matching
-      // deltaR requirement
-      float dEta = eleEta->at(i_leading) - mcEta->at(j_track);
-      float dPhi = elePhi->at(i_leading) - mcPhi->at(j_track);
-      float dR = sqrt( dEta*dEta + dPhi*dPhi );
-
-      float relativeDiffpT = fabs( elePt->at(i_leading) - mcPt->at(j_track) ) / mcPt->at(j_track);
-
-      if (dR < 0.0225 && relativeDiffpT < 0.5) {  // same requirement as implemented in ggHiNtuplizer
-        if( mcPt->at(j_track) > maxPt_genmatch ) {
-          maxPt_genmatch = mcPt->at(j_track);
-          i_genmatch = j_track;
-        }
-      }
-    }
-    if (i_genleading == -1 || i_genleading != i_genmatch) continue;
-    //cout<<"i_genleading: "<<i_genleading<<" i_genmatch: "<<i_genmatch<<endl;
-
-    /*
-    int i_genmatch = ele_genMatchedIndex->at(i_leading);
-    int i_genleading = -1;
-    float maxPt_gen = 0;
-    
-    // loop over gen
-    for(Int_t j_track = 0; j_track < (int)mcPID->size(); j_track++){
-
-      // gen electron selection
-      if( abs(mcPID->at(j_track)) != 11 ) continue;
-      
-      // compare with previous leading candidate
-      if( mcPt->at(j_track) > maxPt_gen ) {
-        maxPt_gen = mcPt->at(j_track);
-        i_genleading = j_track;
-      }
-
-    }
-    if (i_genleading == -1 || i_genleading != i_genmatch) continue;
-    */
-    
-    /*
-    if (HLT_HIEle30Gsf) {
-      cout<<endl;
-      cout<<"entry "<<i_event<<" run "<<run<<" lumi "<<lumi<<" event "<<evt<<endl;
-      cout<<"leading reco (pt, eta, phi): "<<elePt->at(i_leading)<<" "<<eleEta->at(i_leading)<<" "<<elePhi->at(i_leading)<<endl;
-      if (HLT_HIEle30Gsf) {
-        for(int j=0; j<Ele30Gsf_pt->size(); j++) {
-          cout<<"          -> (pt, eta, phi): "<<Ele30Gsf_pt->at(j)<<" "<<Ele30Gsf_eta->at(j)<<" "<<Ele30Gsf_phi->at(j)<<endl;
-        }
-      }
-    }
-      */
-    
-    npass_genmatch++;
-
-    /*
-    float maxPt_30 = maxPt;
-    float minDR = 999;
-    if(L1_SingleEG15 && HLT_HIEle30Gsf) {
-      float i_hltobjmatch = -1;
-      for (int i = 0; i<Ele30Gsf_pt->size(); i++) {
-        float deta = eleEta->at(i_leading) - Ele30Gsf_eta->at(i);
-        float dphi = elePhi->at(i_leading) - Ele30Gsf_phi->at(i);
-        float dR = sqrt(deta*deta + dphi*dphi);
-        if (dR < minDR) {
-          minDR = dR;
-          i_hltobjmatch = i;
-        }
-      }
-      //if (Ele30Gsf_pt->size() < 2) continue;
-      
-      //maxPt_30 = Ele30Gsf_pt->at(i_hltobjmatch);
-    }
-      */
-
     // =============== fill histograms ================
 
-    float weight = 1;
+    float weight = pthat_weight;
 
     if(isBarrel) {
 
@@ -544,8 +523,10 @@ void triggerAnalysis_ele_mc(
 
       if(HLT_HIEle50Gsf) num_50->Fill(maxPt, weight);
 
-      if(L1_SingleEG15 && !HLT_HIEle30Gsf && maxPt > 35) {
+      if(L1_SingleEG15 && !HLT_HIEle30Gsf && maxPt > 50) {
         h2_missedEtaPhi->Fill(elePhi->at(i_leading), eleEta->at(i_leading));
+      
+        
       }
 
     }
@@ -582,9 +563,11 @@ void triggerAnalysis_ele_mc(
   std::cout << std::endl;
   std::cout << "HLT_HIEle20Gsf results ... " << std::endl;
   std::cout << "neles = " << neles << std::endl;
+  std::cout << "npass_genmatch = " << npass_genmatch  << std::endl;
+  std::cout << "npass_hltmatch = " << npass_hltmatch  << std::endl;
   std::cout << "npass_leading = " << npass_leading  << std::endl;
   std::cout << "npass_trkrcut = " << npass_trkrcut  << std::endl;
-  std::cout << "npass_genmatch = " << npass_genmatch  << std::endl;
+  std::cout << "npass_l1 = " << npass_l1  << std::endl;
   std::cout << "npass_trigger = " << npass_trigger  << std::endl;
 
   /*
@@ -656,12 +639,12 @@ void triggerAnalysis_ele_mc(
   r_40_endcap->SetMarkerSize(marker_size);
   r_50_endcap->SetMarkerSize(marker_size);
     
-  r_15->SetMarkerStyle(20);
+  r_15->SetMarkerStyle(29);
   r_20->SetMarkerStyle(20);
   r_30->SetMarkerStyle(21);
   r_40->SetMarkerStyle(22);
   r_50->SetMarkerStyle(23);
-  r_15_endcap->SetMarkerStyle(20);
+  r_15_endcap->SetMarkerStyle(29);
   r_20_endcap->SetMarkerStyle(20);
   r_30_endcap->SetMarkerStyle(21);
   r_40_endcap->SetMarkerStyle(22);
@@ -700,14 +683,15 @@ void triggerAnalysis_ele_mc(
   r_20->SetStats(0);
   r_20->GetXaxis()->SetTitleSize(0.05);
   r_20->GetYaxis()->SetTitleSize(0.05);
+  r_20->GetYaxis()->SetRangeUser(0,1.05);
   r_20->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   r_20->GetYaxis()->SetTitle("Trigger efficiency");
   TLegend *leg = new TLegend(0.55,0.3,0.88,0.5);
-  leg->AddEntry(r_15,"HLT_HIEle15Gsf_v16");
-  leg->AddEntry(r_20,"HLT_HIEle20Gsf_v16");
-  leg->AddEntry(r_30,"HLT_HIEle30Gsf_v16");
-  leg->AddEntry(r_40,"HLT_HIEle40Gsf_v16");
-  leg->AddEntry(r_50,"HLT_HIEle50Gsf_v16");
+  leg->AddEntry(r_15,"HLT_HIEle15Gsf");
+  leg->AddEntry(r_20,"HLT_HIEle20Gsf");
+  leg->AddEntry(r_30,"HLT_HIEle30Gsf");
+  leg->AddEntry(r_40,"HLT_HIEle40Gsf");
+  leg->AddEntry(r_50,"HLT_HIEle50Gsf");
   //leg->SetBorderSize(0);
   r_20->Draw();
   leg->Draw();
@@ -740,13 +724,14 @@ void triggerAnalysis_ele_mc(
   r_20_endcap->SetStats(0);
   r_20_endcap->GetXaxis()->SetTitleSize(0.05);
   r_20_endcap->GetYaxis()->SetTitleSize(0.05);
+  r_20_endcap->GetYaxis()->SetRangeUser(0,1.05);
   r_20_endcap->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   r_20_endcap->GetYaxis()->SetTitle("Trigger efficiency");
   TLegend *leg_endcap = new TLegend(0.55,0.3,0.88,0.5);
-  leg_endcap->AddEntry(r_20_endcap,"HLT_HIEle20Gsf_v16");
-  leg_endcap->AddEntry(r_30_endcap,"HLT_HIEle30Gsf_v16");
-  leg_endcap->AddEntry(r_40_endcap,"HLT_HIEle40Gsf_v16");
-  leg_endcap->AddEntry(r_50_endcap,"HLT_HIEle50Gsf_v16");
+  leg_endcap->AddEntry(r_20_endcap,"HLT_HIEle20Gsf");
+  leg_endcap->AddEntry(r_30_endcap,"HLT_HIEle30Gsf");
+  leg_endcap->AddEntry(r_40_endcap,"HLT_HIEle40Gsf");
+  leg_endcap->AddEntry(r_50_endcap,"HLT_HIEle50Gsf");
   //leg_endcap->SetBorderSize(0);
   r_20_endcap->Draw();
   leg_endcap->Draw();
@@ -778,6 +763,7 @@ void triggerAnalysis_ele_mc(
   rl1_7->SetStats(0);
   rl1_7->GetXaxis()->SetTitleSize(0.05);
   rl1_7->GetYaxis()->SetTitleSize(0.05);
+  rl1_7->GetYaxis()->SetRangeUser(0,1.05);
   rl1_7->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   rl1_7->GetYaxis()->SetTitle("L1 Trigger efficiency");
   TLegend *leg2 = new TLegend(0.55,0.3,0.88,0.5);

@@ -1,0 +1,12 @@
+<tool name="histfactory" version="6.32.13-807da11fdf7fb4ed6e3041a1948d5a8f" revision="1">
+  <info url="http://root.cern.ch/root/"/>
+  <lib name="HistFactory"/>
+  <use name="roofitcore"/>
+  <use name="roofit"/>
+  <use name="roostats"/>
+  <use name="rootcore"/>
+  <use name="roothistmatrix"/>
+  <use name="rootgpad"/>
+  <use name="rootxml"/>
+  <use name="rootfoam"/>
+</tool>

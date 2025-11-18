@@ -64,9 +64,9 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 void triggerAnalysis_pho_mc(
     string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/PhotonQCD_pTMin20_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_QCDPhoton/251023_035328/0000/",
     string inputHLT = "", //"/afs/cern.ch/user/k/kdeverea/HLTClayton/CMSSW_15_1_0/src/workstation/HLT_emulation/scripts/PbPb/openHLTfiles/",
-    string output_base = "MCQCDPhoton30_100",
-    int nfiles = -1,
-    float minHiBin = 60.0,
+    string output_base = "MCQCDPhoton0_100",
+    int nfiles = 200,
+    float minHiBin = 0.0,
     float maxHiBin = 200.0
   ){
 

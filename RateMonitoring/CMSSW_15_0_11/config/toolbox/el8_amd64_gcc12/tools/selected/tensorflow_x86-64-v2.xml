@@ -1,0 +1,6 @@
+<tool name="tensorflow_x86-64-v2" version="2.12.0-cf3ce1591c6b667619156ef4eedea6a5" revision="1">
+  <client>
+    <environment name="X86_64_V2_LIBDIR" default="/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/tensorflow_x86-64-v2/2.12.0-cf3ce1591c6b667619156ef4eedea6a5/lib"/>
+  </client>
+  <runtime name="X86_64_V2_PATH" value="/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/tensorflow_x86-64-v2/2.12.0-cf3ce1591c6b667619156ef4eedea6a5/bin" type="path"/>
+</tool>

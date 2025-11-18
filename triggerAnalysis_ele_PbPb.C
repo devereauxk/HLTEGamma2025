@@ -31,6 +31,11 @@ TH1D *rl1_7_endcap = new TH1D("rl1_7_endcap","rl1_7_endcap",NPtBins,PtMin,PtMax)
 TH1D *rl1_15_endcap = new TH1D("rl1_15_endcap","rl1_15_endcap",NPtBins,PtMin,PtMax);
 TH1D *rl1_21_endcap = new TH1D("rl1_21_endcap","rl1_21_endcap",NPtBins,PtMin,PtMax);
 
+TH1D *num_15 = new TH1D("num_15","num_15",NPtBins,PtMin,PtMax);
+TH1D *num_15_endcap = new TH1D("num_15_endcap","num_15_endcap",NPtBins,PtMin,PtMax);
+TH1D *r_15 = new TH1D("r_15","r_15",NPtBins,PtMin,PtMax);
+TH1D *r_15_endcap = new TH1D("r_15_endcap","r_15_endcap",NPtBins,PtMin,PtMax);
+
 TH1D *num_20 = new TH1D("num_20","num_20",NPtBins,PtMin,PtMax);
 TH1D *num_20_endcap = new TH1D("num_20_endcap","num_20_endcap",NPtBins,PtMin,PtMax);
 TH1D *r_20 = new TH1D("r_20","r_20",NPtBins,PtMin,PtMax);
@@ -57,14 +62,16 @@ TH2D *h2_missedEtaPhi = new TH2D("h2_missedEtaPhi","h2_missedEtaPhi",NPhiBins,ph
 
 
 // ==========================================================
-// main: trigger turn on curves for HLT electrons in MC
+// main: trigger turn on curves for HLT electrons in PbPb data
 // ==========================================================
 
 void triggerAnalysis_ele_PbPb(
 
     // PbPb data
     string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
-    string output_base = "DataPbPb_run399499",
+    string inputText = "run399499_forests.txt",
+    string output_base = "DataPbPb0_100_run399499",
+    string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
 
     int nfiles = -1,
     float minHiBin = 0.0,
@@ -72,7 +79,8 @@ void triggerAnalysis_ele_PbPb(
   ){
 
   std::cout << "running triggerAnalysis_ele_PbPb()" << std::endl;
-  std::cout << "input forest directory = " << inputForest  << std::endl;
+  if (inputText != "") std::cout << "input text file      = " << inputText  << std::endl;
+  else std::cout << "input forest directory = " << inputForest  << std::endl;
   std::cout << "output tag             = " << output_base << std::endl;
 
   TChain *HltTree = new TChain("hltanalysis/HltTree");
@@ -82,7 +90,18 @@ void triggerAnalysis_ele_PbPb(
   std::cout<< "Adding input files...";
 
   // forest files
-  if (nfiles == -1) {
+  if (inputText != "") {
+    ifstream infile(inputText);
+    string line;
+    int fileCount = 0;
+    while (getline(infile, line) && (fileCount < nfiles || nfiles == -1)) {
+      HltTree   ->Add(line.c_str());
+      EventTree ->Add(line.c_str());
+      HiTree    ->Add(line.c_str());
+      fileCount++;
+    }
+  }
+  else if (nfiles == -1) {
     string this_forest_name = inputForest + "/HiForest*.root";
     HltTree   ->Add(this_forest_name.c_str());
     EventTree ->Add(this_forest_name.c_str());
@@ -130,6 +149,7 @@ void triggerAnalysis_ele_PbPb(
   Int_t           L1_SingleEG7;
   Int_t           L1_SingleEG15;
   Int_t           L1_SingleEG21;
+  Int_t           HLT_HIEle15Gsf;
   Int_t           HLT_HIEle20Gsf;
   Int_t           HLT_HIEle30Gsf;
   Int_t           HLT_HIEle40Gsf;
@@ -146,6 +166,7 @@ void triggerAnalysis_ele_PbPb(
   HltTree->SetBranchStatus("L1_SingleEG15_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG21_BptxAND", 1);
 
+  HltTree->SetBranchStatus("HLT_HIEle15Gsf_v17", 1);
   HltTree->SetBranchStatus("HLT_HIEle20Gsf_v17", 1);
   HltTree->SetBranchStatus("HLT_HIEle30Gsf_v17", 1);
   HltTree->SetBranchStatus("HLT_HIEle40Gsf_v17", 1);
@@ -159,6 +180,7 @@ void triggerAnalysis_ele_PbPb(
   HltTree->SetBranchAddress("L1_SingleEG15_BptxAND", &L1_SingleEG15);
   HltTree->SetBranchAddress("L1_SingleEG21_BptxAND", &L1_SingleEG21);
 
+  HltTree->SetBranchAddress("HLT_HIEle15Gsf_v17", &HLT_HIEle15Gsf);
   HltTree->SetBranchAddress("HLT_HIEle20Gsf_v17", &HLT_HIEle20Gsf);
   HltTree->SetBranchAddress("HLT_HIEle30Gsf_v17", &HLT_HIEle30Gsf);
   HltTree->SetBranchAddress("HLT_HIEle40Gsf_v17", &HLT_HIEle40Gsf);
@@ -338,6 +360,8 @@ void triggerAnalysis_ele_PbPb(
       if(L1_SingleEG21) l1_21->Fill(maxPt, weight);
 
       // fill numerator histograms
+      if(HLT_HIEle15Gsf) num_15->Fill(maxPt, weight);
+      
       if(HLT_HIEle20Gsf) {
         num_20->Fill(maxPt, weight);
         npass_trigger++;
@@ -368,6 +392,8 @@ void triggerAnalysis_ele_PbPb(
       if(L1_SingleEG21) l1_21_endcap->Fill(maxPt, weight);
 
       // fill numerator histograms
+      if(HLT_HIEle15Gsf) num_15_endcap->Fill(maxPt, weight);
+
       if(HLT_HIEle20Gsf) {
         num_20_endcap->Fill(maxPt, weight);
       }
@@ -396,6 +422,7 @@ void triggerAnalysis_ele_PbPb(
   r_50->Divide(num_50,denom,1,1,"B");
   */
 
+  r_15->Divide(num_15,l1_7,1,1,"B");
   r_20->Divide(num_20,l1_15,1,1,"B");
   r_30->Divide(num_30,l1_15,1,1,"B");
   r_40->Divide(num_40,l1_21,1,1,"B");
@@ -405,53 +432,64 @@ void triggerAnalysis_ele_PbPb(
   rl1_15->Divide(l1_15,denom,1,1,"B");
   rl1_21->Divide(l1_21,denom,1,1,"B");
 
+  r_15_endcap->Divide(num_15_endcap,l1_7_endcap,1,1,"B");
   r_20_endcap->Divide(num_20_endcap,l1_15_endcap,1,1,"B");
   r_30_endcap->Divide(num_30_endcap,l1_15_endcap,1,1,"B");
   r_40_endcap->Divide(num_40_endcap,l1_21_endcap,1,1,"B");
   r_50_endcap->Divide(num_50_endcap,l1_21_endcap,1,1,"B");
 
+  r_15->SetLineColor(kOrange-3);
   r_20->SetLineColor(kRed-4);
   r_30->SetLineColor(kBlue-4);
   r_40->SetLineColor(kGreen+2);
   r_50->SetLineColor(kMagenta-9);
+  r_15_endcap->SetLineColor(kOrange-3);
   r_20_endcap->SetLineColor(kRed-4);
   r_30_endcap->SetLineColor(kBlue-4);
   r_40_endcap->SetLineColor(kGreen+2);
   r_50_endcap->SetLineColor(kMagenta-9);
 
+  r_15->SetMarkerColor(kOrange-3);
   r_20->SetMarkerColor(kRed-4);
   r_30->SetMarkerColor(kBlue-4);
   r_40->SetMarkerColor(kGreen+2);
   r_50->SetMarkerColor(kMagenta-9);
+  r_15_endcap->SetMarkerColor(kOrange-3);
   r_20_endcap->SetMarkerColor(kRed-4);
   r_30_endcap->SetMarkerColor(kBlue-4);
   r_40_endcap->SetMarkerColor(kGreen+2);
   r_50_endcap->SetMarkerColor(kMagenta-9);
 
   double line_width = 1.8;
+  r_15->SetLineWidth(line_width);
   r_20->SetLineWidth(line_width);
   r_30->SetLineWidth(line_width);
   r_40->SetLineWidth(line_width);
   r_50->SetLineWidth(line_width);
+  r_15_endcap->SetLineWidth(line_width);
   r_20_endcap->SetLineWidth(line_width);
   r_30_endcap->SetLineWidth(line_width);
   r_40_endcap->SetLineWidth(line_width);
   r_50_endcap->SetLineWidth(line_width);
 
   double marker_size = 1.6;
+  r_15->SetMarkerSize(marker_size);
   r_20->SetMarkerSize(marker_size);
   r_30->SetMarkerSize(marker_size);
   r_40->SetMarkerSize(marker_size);
   r_50->SetMarkerSize(marker_size);
+  r_15_endcap->SetMarkerSize(marker_size);
   r_20_endcap->SetMarkerSize(marker_size);
   r_30_endcap->SetMarkerSize(marker_size);
   r_40_endcap->SetMarkerSize(marker_size);
   r_50_endcap->SetMarkerSize(marker_size);
     
+  r_15->SetMarkerStyle(29);
   r_20->SetMarkerStyle(20);
   r_30->SetMarkerStyle(21);
   r_40->SetMarkerStyle(22);
   r_50->SetMarkerStyle(23);
+  r_15_endcap->SetMarkerStyle(29);
   r_20_endcap->SetMarkerStyle(20);
   r_30_endcap->SetMarkerStyle(21);
   r_40_endcap->SetMarkerStyle(22);
@@ -493,6 +531,7 @@ void triggerAnalysis_ele_PbPb(
   r_20->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   r_20->GetYaxis()->SetTitle("Trigger efficiency");
   TLegend *leg = new TLegend(0.55,0.3,0.88,0.5);
+  leg->AddEntry(r_15,"HLT_HIEle15Gsf_v17");
   leg->AddEntry(r_20,"HLT_HIEle20Gsf_v17");
   leg->AddEntry(r_30,"HLT_HIEle30Gsf_v17");
   leg->AddEntry(r_40,"HLT_HIEle40Gsf_v17");
@@ -503,12 +542,13 @@ void triggerAnalysis_ele_PbPb(
   r_30->Draw("same");
   r_40->Draw("same");
   r_50->Draw("same");
+  r_15->Draw("same");
 
   TLatex *la = new TLatex();
   la->SetTextFont(42);
   la->SetTextSize(0.03); 
 
-  la->DrawLatexNDC(0.22,0.92,"2025 Pythia8+Hydjet ZtoEE");
+  la->DrawLatexNDC(0.22,0.92,plot_label.c_str());
   la->DrawLatexNDC(0.72,0.92,"no L1 emulation");
   la->DrawLatexNDC(0.6,0.65,"Barrel: |#eta| < 1.442");
   la->DrawLatexNDC(0.6,0.6,Form("%.0f%% - %.0f%%", minHiBin/2, maxHiBin/2));
@@ -535,17 +575,19 @@ void triggerAnalysis_ele_PbPb(
   leg_endcap->AddEntry(r_30_endcap,"HLT_HIEle30Gsf_v17");
   leg_endcap->AddEntry(r_40_endcap,"HLT_HIEle40Gsf_v17");
   leg_endcap->AddEntry(r_50_endcap,"HLT_HIEle50Gsf_v17");
+  leg_endcap->AddEntry(r_15_endcap,"HLT_HIEle15Gsf_v17");
   //leg_endcap->SetBorderSize(0);
   r_20_endcap->Draw();
   leg_endcap->Draw();
   r_30_endcap->Draw("same");
   r_40_endcap->Draw("same");
   r_50_endcap->Draw("same");
+  r_15_endcap->Draw("same");
 
   TLatex *la_endcap = new TLatex();
   la_endcap->SetTextFont(42);
   la_endcap->SetTextSize(0.03);
-  la_endcap->DrawLatexNDC(0.22,0.92,"2025 Pythia8+Hydjet ZtoEE");
+  la_endcap->DrawLatexNDC(0.22,0.92,plot_label.c_str());
   la_endcap->DrawLatexNDC(0.72,0.92,"no L1 emulation");
   la_endcap->DrawLatexNDC(0.6,0.65,"Endcap: 1.556 < |#eta| < 2.1");
   la_endcap->DrawLatexNDC(0.6,0.6,Form("%.0f%% - %.0f%%", minHiBin/2, maxHiBin/2));
@@ -582,7 +624,7 @@ void triggerAnalysis_ele_PbPb(
   la2->SetTextFont(42);
   la2->SetTextSize(0.03);
 
-  la2->DrawLatexNDC(0.22,0.92,"2025 Pythia8+Hydjet ZtoEE");
+  la2->DrawLatexNDC(0.22,0.92,plot_label.c_str());
   la2->DrawLatexNDC(0.72,0.92,"L1 emulation");
   la2->DrawLatexNDC(0.6,0.65,"Barrel: |#eta| < 1.442");
   la2->DrawLatexNDC(0.6,0.6,Form("%.0f%% - %.0f%%", minHiBin/2, maxHiBin/2));

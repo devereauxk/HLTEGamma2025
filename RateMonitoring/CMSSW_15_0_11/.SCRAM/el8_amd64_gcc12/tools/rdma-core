@@ -1,0 +1,28 @@
+{
+  "INCLUDE": [
+    "/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/rdma-core/57.0-da75dc7921797d358654c7b21cb6a1f8/include"
+  ],
+  "LIBDIR": [
+    "/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/rdma-core/57.0-da75dc7921797d358654c7b21cb6a1f8/lib64"
+  ],
+  "RDMA_CORE_BASE": "/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/rdma-core/57.0-da75dc7921797d358654c7b21cb6a1f8",
+  "RUNTIME": {
+    "PATH:PATH": [
+      "/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/rdma-core/57.0-da75dc7921797d358654c7b21cb6a1f8/bin"
+    ],
+    "PATH:ROOT_INCLUDE_PATH": [
+      "/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/rdma-core/57.0-da75dc7921797d358654c7b21cb6a1f8/include"
+    ],
+    "PATH:VERBS_CONFIG_DIR": [
+      "/cvmfs/cms.cern.ch/el8_amd64_gcc12/external/rdma-core/57.0-da75dc7921797d358654c7b21cb6a1f8/etc/libibverbs.d"
+    ]
+  },
+  "TOOLNAME": "rdma-core",
+  "TOOLREVISION": "1",
+  "TOOLVERSION": "57.0-da75dc7921797d358654c7b21cb6a1f8",
+  "VARIABLES": [
+    "RDMA_CORE_BASE",
+    "LIBDIR",
+    "INCLUDE"
+  ]
+}

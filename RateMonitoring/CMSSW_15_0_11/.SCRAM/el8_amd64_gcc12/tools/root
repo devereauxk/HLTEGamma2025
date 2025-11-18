@@ -1,0 +1,16 @@
+{
+  "FLAGS": {
+    "CXXMODULES": [
+      "0"
+    ],
+    "GENREFLEX_FAILES_ON_WARNS": [
+      "-failOnWarnings"
+    ]
+  },
+  "TOOLNAME": "root",
+  "TOOLREVISION": "1",
+  "TOOLVERSION": "6.32.13-807da11fdf7fb4ed6e3041a1948d5a8f",
+  "USE": [
+    "rootphysics"
+  ]
+}
