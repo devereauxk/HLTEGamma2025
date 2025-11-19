@@ -1,5 +1,3 @@
-#include "include/EventMatcher.h"
-
 using namespace std;
 
 Float_t PtMin = 2.;
@@ -62,11 +60,14 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 // ==========================================================
 
 void triggerAnalysis_pho_mc(
+
+    // 2025 QCDPhoton sample
     string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/PhotonQCD_pTMin20_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_QCDPhoton/251023_035328/0000/",
     string inputHLT = "", //"/afs/cern.ch/user/k/kdeverea/HLTClayton/CMSSW_15_1_0/src/workstation/HLT_emulation/scripts/PbPb/openHLTfiles/",
-    string output_base = "MCQCDPhoton0_100",
+    string output_base = "MCQCDPhoton30_100",
+
     int nfiles = 200,
-    float minHiBin = 0.0,
+    float minHiBin = 60.0,
     float maxHiBin = 200.0
   ){
 
@@ -134,6 +135,7 @@ void triggerAnalysis_pho_mc(
   HiTree->SetBranchStatus("run",1);
   HiTree->SetBranchStatus("hiBin",1);
   HiTree->SetBranchStatus("hiHF",1);
+  HiTree->SetBranchStatus("weight",1);
   HiTree->SetBranchStatus("vz",1);
 
   HiTree->SetBranchAddress("evt", &evt);
@@ -295,23 +297,7 @@ void triggerAnalysis_pho_mc(
   EventTree->SetBranchAddress("pho_trackIsoR3PtCut20", &pho_trackIsoR3PtCut20);
 
 
-  //ggHiNtuplizer ggHiNtuple;
-  //ggHiNtuple.setupTreeForReading(EventTree);
-
   std::cout << "done" << std::endl;
-  //Long64_t entriesHLT = HltTree_emulated->GetEntries();
-  //std::cout << "HLT entries = " << entriesHLT << std::endl;
-
-  // fill event matcher with HLT events
-  /*
-  EventMatcher* emTrig = new EventMatcher();
-  for (ULong64_t j_event = 0; j_event < HltTree_emulated->GetEntries(); ++j_event){ 
-
-    HltTree_emulated->GetEntry(j_event);
-
-    emTrig->addEvent(hlt_Run, hlt_LumiBlock, hlt_Event, j_event);
-  }
-  */
 
   Long64_t entriesTmp = HltTree->GetEntries();
   std::cout << "reco entries = " << entriesTmp << std::endl;
@@ -322,10 +308,9 @@ void triggerAnalysis_pho_mc(
   // loop through reco objects
   int n_reco = HltTree-> GetEntries();
   int nphos = 0;
-  int npass_emmatch = 0;
   int npass_leading = 0;
-  int npass_trkrcut = 0;
   int npass_genmatch = 0;
+  int npass_trkrcut = 0;
   int npass_l1 = 0;
   int npass_trigger = 0;
   for (ULong64_t i_event = 0; i_event < HltTree->GetEntries(); ++i_event){
@@ -347,24 +332,6 @@ void triggerAnalysis_pho_mc(
     // ========== skip duplicate reco events ===========
     // TODO
 
-    // ===== find HLT emulation match of reco event =====
-    //int i_emulated = -1;
-
-    //i_emulated = emTrig->getEntry(forest_Run, forest_LumiBlock, forest_Event);
-
-    //if (i_emulated < 0) continue; // no match found
-    
-
-    //cout<<"i_emulated = "<<i_emulated<<endl;
-
-    //Tree_HLT_HIGEDPhoton20->GetEntry(i_emulated);
-    //HltTree_emulated->GetEntry(i_emulated);
-
-    //cout<<"("<<hlt_Run<<","<<hlt_LumiBlock<<","<<hlt_Event<<") matched to ("<<forest_Run<<","<<forest_LumiBlock<<","<<forest_Event<<")"<<endl;
-
-    npass_emmatch++;  
-
-
     // ============= find leading electron ==============
     // take highest reco pT as leading electron
     float maxPt = 0;
@@ -372,6 +339,28 @@ void triggerAnalysis_pho_mc(
     
     // loop over reco
     for(Int_t i_track = 0; i_track < nPho; i_track++){
+
+      // find gen matched photons
+      int i_genmatch = pho_genMatchedIndex->at(i_track);
+      if (i_genmatch < 0) continue;
+      if (abs(mcPID->at(i_genmatch)) != 22) continue;
+
+      // check if matches to hltobject
+      /*
+      bool hlt_matched = false;
+      for(Int_t i_hlt = 0; i_hlt < Ele30Gsf_pt->size(); i_hlt++) {
+        // deltaR requirement
+        float dEta = eleEta->at(i_track) - Ele30Gsf_eta->at(i_hlt);
+        float dPhi = elePhi->at(i_track) - Ele30Gsf_phi->at(i_hlt);
+        if (dPhi > TMath::Pi()) dPhi -= TMath::Pi();
+        float dR = sqrt( dEta*dEta + dPhi*dPhi );
+
+        if (dR < 0.5) {
+          hlt_matched = true;
+          break;
+        }
+      }
+        */
 
       // compare with previous leading candidate
       if(phoEt->at(i_track) > maxPt) { // find the leading phoEt in the event
@@ -414,33 +403,9 @@ void triggerAnalysis_pho_mc(
     npass_trkrcut++;
 
 
-    // =============== match to gen level ===============
-
-    int i_genmatch = pho_genMatchedIndex->at(i_leading);
-    int i_genleading = -1;
-    float maxPt_gen = 0;
-    
-    // loop over gen
-    for(Int_t j_track = 0; j_track < (int)mcPID->size(); j_track++){
-
-      // gen photon selection
-      if( abs(mcPID->at(j_track)) != 22 ) continue;
-      
-      // compare with previous leading candidate
-      if( mcEt->at(j_track) > maxPt_gen ) {
-        maxPt_gen = mcEt->at(j_track);
-        i_genleading = j_track;
-      }
-
-    }
-    if (i_genleading == -1 || i_genleading != i_genmatch) continue;  // leading tracks dont match
-
-    npass_genmatch++;
-
-
     // =============== fill histograms ================
 
-    float weight = 1;
+    float weight = pthat_weight;
 
     if(isBarrel) {
 
@@ -503,7 +468,6 @@ void triggerAnalysis_pho_mc(
   std::cout << "nphos = " << nphos << std::endl;
   std::cout << "npass_leading = " << npass_leading  << std::endl;
   std::cout << "npass_trkrcut = " << npass_trkrcut  << std::endl;
-  std::cout << "npass_genmatch = " << npass_genmatch  << std::endl;
   std::cout << "npass_trigger = " << npass_trigger  << std::endl;
 
   /*

@@ -68,11 +68,17 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 
 void triggerAnalysis_pho_over_ele_PbPb(
 
-    // PbPb data
+    // PbPb data run 399499 quick reco
+    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
+    //string inputText = "run399499_forests.txt",
+    //string output_base = "DataPbPb0_100_run399499",
+    //string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
+
+    // PbPb data run 399499 prompt reco
     string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
-    string inputText = "run399499_forests.txt",
-    string output_base = "DataPbPb0_100_run399499",
-    string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
+    string inputText = "run399499_prompt_forests.txt",
+    string output_base = "DataPbPb0_100_run399499_prompt",
+    string plot_label = "Run 399499, prompt HIPhysicsRawPrime0-9",
 
     int nfiles = -1,
     float minHiBin = 0.0,
@@ -340,13 +346,13 @@ void triggerAnalysis_pho_over_ele_PbPb(
   int npass_trkrcut = 0;
   int npass_denom = 0;
   int npass_numer = 0;
-  for (ULong64_t i_event = 0; i_event < HltTree->GetEntries(); ++i_event){
+  for (ULong64_t i_event = 0; i_event < n_reco; ++i_event){
 
-    if(i_event%(HltTree->GetEntries()/500)==0) std::cout << "Processing entry " << i_event << " / " << entriesTmp << "\r" << std::flush;
+    if(i_event%(1+HltTree->GetEntries()/500)==0) std::cout << "Processing entry " << i_event << " / " << entriesTmp << "\r" << std::flush;
 
     HiTree->GetEntry(i_event);
     HltTree->GetEntry(i_event);
-    EventTree->GetEntry(i_event);
+    EventTree->GetEntry(i_event); 
   	
     h_hiBin->Fill(hiBin);
 
@@ -437,7 +443,7 @@ void triggerAnalysis_pho_over_ele_PbPb(
       if (eledEtaSeedAtVtx->at(i_leading) > 0.0037)       continue;
       if (eledPhiAtVtx->at(i_leading) > 0.1280)           continue;
       if (eleEoverPInv->at(i_leading) > 0.1065)           continue;
-      if (eleHoverE->at(i_leading) > 0.13)                continue;
+      if (eleHoverE->at(i_leading) > 0.55)                continue;
       isBarrel_ele = true;
     }
     else continue;
@@ -464,25 +470,23 @@ void triggerAnalysis_pho_over_ele_PbPb(
 
 
       // fill numerator (photon) histograms
-      if(HLT_HIMinimumBias && HLT_HIGEDPhoton10) {
+      if(HLT_HIGEDPhoton10) {
         num_10->Fill(maxPt, weight);
         npass_numer++;
       }
 
-      if(HLT_HIMinimumBias && HLT_HIGEDPhoton20) num_20->Fill(maxPt, weight);
+      if(HLT_HIGEDPhoton20) num_20->Fill(maxPt, weight);
 
-      if(HLT_HIMinimumBias && HLT_HIGEDPhoton30) num_30->Fill(maxPt, weight);
+      if(HLT_HIGEDPhoton30) num_30->Fill(maxPt, weight);
 
-      if(HLT_HIMinimumBias && HLT_HIGEDPhoton40) num_40->Fill(maxPt, weight);
+      if(HLT_HIGEDPhoton40) num_40->Fill(maxPt, weight);
 
-      if(HLT_HIMinimumBias && HLT_HIGEDPhoton50) num_50->Fill(maxPt, weight);
+      if(HLT_HIGEDPhoton50) num_50->Fill(maxPt, weight);
 
 
       // fill denominator (electron) histograms
-      if(HLT_HIMinimumBias) {
-        ele->Fill(maxPt, weight);
-        npass_denom++;
-      }
+      ele->Fill(maxPt, weight);
+      npass_denom++;
     
     }
 

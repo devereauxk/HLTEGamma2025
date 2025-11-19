@@ -112,9 +112,14 @@ void triggerAnalysis_ele_mc(
     //string output_base = "2024MCZee0_100",
 
     // 2024 ZtoEE sample, noembedding
-    string inputForest = "/eos/cms/store/group/phys_heavyions/prdas/EGamma/Run3_PbPb_2024_MC/Ze10e10/NoEmbedding/Pythia8_Embedded_Ze10e10_TuneCP5_2024/crab_20241026_145054/241026_125057/0000",
+    //string inputForest = "/eos/cms/store/group/phys_heavyions/prdas/EGamma/Run3_PbPb_2024_MC/Ze10e10/NoEmbedding/Pythia8_Embedded_Ze10e10_TuneCP5_2024/crab_20241026_145054/241026_125057/0000",
+    //string inputHLT = "",
+    //string output_base = "2024MCZeeNoembedding0_100",
+
+    // 2024 ppref, ZtoEE
+    string inputForest = "/eos/cms/store/group/phys_heavyions/prdas/EGamma/Run3_ppref_2024_MC/Ze10e10/Pythia8_ppRef_Ze10e10_TuneCP5_2024/crab_20241026_131030/241026_111033/0000",
     string inputHLT = "",
-    string output_base = "2024MCZeeNoembedding0_100",
+    string output_base = "2024MCpprefZee",
 
     int nfiles = -1,
     float minHiBin = 0.0,
@@ -339,12 +344,9 @@ void triggerAnalysis_ele_mc(
   
 
   std::cout << "done" << std::endl;
-  //Long64_t entriesHLT = HltTree_emulated->GetEntries();
-  //std::cout << "HLT entries = " << entriesHLT << std::endl;
 
   Long64_t entriesTmp = HltTree->GetEntries();
   std::cout << "reco entries = " << entriesTmp << std::endl;
-
 
 
   // ================= Event Loop  =================
@@ -377,9 +379,6 @@ void triggerAnalysis_ele_mc(
     neles += nEle;
 
     // ============ skip duplicate reco events =============
-    // TODO
-
-    // ======= find HLT emulation match of reco event =======
     // TODO
 
     // ============= match all recos to gen level ============

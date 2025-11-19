@@ -67,11 +67,17 @@ TH2D *h2_missedEtaPhi = new TH2D("h2_missedEtaPhi","h2_missedEtaPhi",NPhiBins,ph
 
 void triggerAnalysis_ele_PbPb(
 
-    // PbPb data
+    // PbPb data run 399499 quick reco
+    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
+    //string inputText = "run399499_forests.txt",
+    //string output_base = "DataPbPb0_100_run399499",
+    //string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
+
+    // PbPb data run 399499 prompt reco
     string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
-    string inputText = "run399499_forests.txt",
-    string output_base = "DataPbPb0_100_run399499",
-    string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
+    string inputText = "run399499_prompt_forests.txt",
+    string output_base = "DataPbPb0_100_run399499_prompt",
+    string plot_label = "Run 399499, prompt HIPhysicsRawPrime0-9",
 
     int nfiles = -1,
     float minHiBin = 0.0,
