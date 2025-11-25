@@ -1,3 +1,5 @@
+#include "include/JSON_handler.h"
+
 using namespace std;
 
 Float_t PtMin = 2.;
@@ -68,15 +70,24 @@ void triggerAnalysis_pho_PbPb(
     //string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
 
     // PbPb data run 399499 prompt reco
-    string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
-    string inputText = "run399499_prompt_forests.txt",
-    string output_base = "DataPbPb0_100_run399499_prompt",
-    string plot_label = "Run 399499, prompt HIPhysicsRawPrime0-9",
+    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
+    //string inputText = "run399499_prompt_forests.txt",
+    //string output_base = "DataPbPb0_100_run399655",
+    //string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
+
+    // PbPb data run 399655
+    string inputForest = " /eos/cms/store/group/phys_heavyions/fdamas/2025PbPbForests/ ",
+    string inputText = "run399655_forests.txt",
+    string output_base = "DataPbPb0_100_run399655",
+    string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
 
     int nfiles = -1,
     float minHiBin = 0.0,
     float maxHiBin = 200.0
   ){
+
+  string jsonPath = "/eos/cms/store/group/phys_heavyions/2025_DCS_JSON_Preliminary/DCSOnly_Latest.json";
+  JSON_handler dcs;
 
   std::cout << "running triggerAnalysis_pho_PbPb()" << std::endl;
   std::cout << "input forest directory = " << inputForest  << std::endl;
@@ -269,17 +280,18 @@ void triggerAnalysis_pho_PbPb(
   int npass_trigger = 0;
   for (ULong64_t i_event = 0; i_event < HltTree->GetEntries(); ++i_event){
 
-    if(i_event%(HltTree->GetEntries()/500)==0) std::cout << "Processing entry " << i_event << " / " << entriesTmp << "\r" << std::flush;
+    if(i_event%((HltTree->GetEntries()/500)+1)==0) std::cout << "Processing entry " << i_event << " / " << entriesTmp << "\r" << std::flush;
 
     HiTree->GetEntry(i_event);
     HltTree->GetEntry(i_event);
     EventTree->GetEntry(i_event);
-  	
-    h_hiBin->Fill(hiBin);
 
     // event cuts
+    if (!dcs.isGood(run, lumi)) continue;
     if(fabs(vz)>15.0) continue;
     if(hiBin < minHiBin || hiBin >= maxHiBin) continue;
+
+    h_hiBin->Fill(hiBin);
 
     nphos += nPho;
 
