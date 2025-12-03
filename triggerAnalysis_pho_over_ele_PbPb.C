@@ -70,23 +70,28 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 
 void triggerAnalysis_pho_over_ele_PbPb(
 
+    string inputForest = " ",
+
     // PbPb data run 399499 quick reco
-    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
     //string inputText = "run399499_forests.txt",
     //string output_base = "DataPbPb0_100_run399499",
     //string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
 
     // PbPb data run 399499 prompt reco
-    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
     //string inputText = "run399499_prompt_forests.txt",
-    //string output_base = "DataPbPb0_100_run399499_prompt",
-    //string plot_label = "Run 399499, prompt HIPhysicsRawPrime0-9",
+    //string output_base = "DataPbPb0_100_run399655",
+    //string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
 
     // PbPb data run 399655
-    string inputForest = " /eos/cms/store/group/phys_heavyions/fdamas/2025PbPbForests/ ",
-    string inputText = "run399655_forests.txt",
-    string output_base = "DataPbPb0_100_run399655",
-    string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
+    //string inputText = "run399655_forests.txt",
+    //string output_base = "DataPbPb0_100_run399655",
+    //string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
+
+    // PbPb data run 399655, PR 450 more stats    
+    string inputText = "run399655_forests_v2.txt",
+    string output_base = "DataPbPb0_100_run399655_v2",
+    string plot_label = "Run 399655, HIPhysicsRawPrime0-19",
+    bool applyMinBiasTrigger = true,
 
     int nfiles = -1,
     float minHiBin = 0.0,
@@ -163,6 +168,7 @@ void triggerAnalysis_pho_over_ele_PbPb(
 
   // ================= HLT Trees =================
   // forest
+  Int_t           L1_MinimumBias;
   Int_t           L1_SingleEG7;
   Int_t           L1_SingleEG15;
   Int_t           L1_SingleEG21;
@@ -189,11 +195,11 @@ void triggerAnalysis_pho_over_ele_PbPb(
   HltTree->SetBranchStatus("LumiBlock", 1);
   HltTree->SetBranchStatus("Run", 1);
 
+  HltTree->SetBranchStatus("L1_MinimumBiasZDC1n_Th1_OR_MinimumBiasHF1_AND_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG7_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG15_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG21_BptxAND", 1);
 
-  HltTree->SetBranchStatus("HLT_HIMinimumBiasHF1ANDZDC1nOR_v6", 1);
   HltTree->SetBranchStatus("HLT_HIGEDPhoton10_v16", 1);
   HltTree->SetBranchStatus("HLT_HIGEDPhoton20_v16", 1);
   HltTree->SetBranchStatus("HLT_HIGEDPhoton30_v16", 1);
@@ -211,11 +217,11 @@ void triggerAnalysis_pho_over_ele_PbPb(
   HltTree->SetBranchAddress("LumiBlock", &forest_LumiBlock);
   HltTree->SetBranchAddress("Run", &forest_Run);
 
+  HltTree->SetBranchAddress("L1_MinimumBiasZDC1n_Th1_OR_MinimumBiasHF1_AND_BptxAND", &L1_MinimumBias);
   HltTree->SetBranchAddress("L1_SingleEG7_BptxAND", &L1_SingleEG7); 
   HltTree->SetBranchAddress("L1_SingleEG15_BptxAND", &L1_SingleEG15);
   HltTree->SetBranchAddress("L1_SingleEG21_BptxAND", &L1_SingleEG21);
 
-  HltTree->SetBranchAddress("HLT_HIMinimumBiasHF1ANDZDC1nOR_v6", &HLT_HIMinimumBias);
   HltTree->SetBranchAddress("HLT_HIGEDPhoton10_v16", &HLT_HIGEDPhoton10);
   HltTree->SetBranchAddress("HLT_HIGEDPhoton20_v16", &HLT_HIGEDPhoton20);
   HltTree->SetBranchAddress("HLT_HIGEDPhoton30_v16", &HLT_HIGEDPhoton30);
@@ -369,6 +375,7 @@ void triggerAnalysis_pho_over_ele_PbPb(
     if (!dcs.isGood(run, lumi)) continue;
     if(fabs(vz)>15.0) continue;
     if(hiBin < minHiBin || hiBin >= maxHiBin) continue;
+    if(applyMinBiasTrigger && !L1_MinimumBias) continue;
 
     h_hiBin->Fill(hiBin);
 
@@ -597,6 +604,7 @@ void triggerAnalysis_pho_over_ele_PbPb(
   r_pho10_ele->SetStats(0);
   r_pho10_ele->GetXaxis()->SetTitleSize(0.05);
   r_pho10_ele->GetYaxis()->SetTitleSize(0.05);
+  r_pho10_ele->GetYaxis()->SetRangeUser(0,1.05);
   r_pho10_ele->GetXaxis()->SetTitle("electron #font[52]{p}_{T} [GeV]");
   r_pho10_ele->GetYaxis()->SetTitle("Trigger efficiency");
   TLegend *leg = new TLegend(0.55,0.3,0.88,0.5);

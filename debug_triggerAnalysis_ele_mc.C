@@ -56,6 +56,29 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 TH2D *h2_missedEtaPhi = new TH2D("h2_missedEtaPhi","h2_missedEtaPhi",NPhiBins,phiMin,phiMax,NEtaBins,etaMin,etaMax);
 
 
+// debugging cuts
+map<string, TH1D*> h_cuts_pass = {
+  {"eleMissHits",           new TH1D("eleMissHits","eleMissHits",10,0,4)},
+  {"eleIP3D",               new TH1D("eleIP3D","eleIP3D",10,0,0.03)},
+  {"eleSigmaIEtaIEta_2012", new TH1D("eleSigmaIEtaIEta_2012","eleSigmaIEtaIEta_2012",10,0,0.02)},
+  {"eledEtaSeedAtVtx",      new TH1D("eledEtaSeedAtVtx","eledEtaSeedAtVtx",20,-0.004,0.004)},
+  {"eledPhiAtVtx",          new TH1D("eledPhiAtVtx","eledPhiAtVtx",10,0,0.08)},
+  {"eleEoverPInv",          new TH1D("eleEoverPInv","eleEoverPInv",10,0,0.04)},
+  {"eleHoverE",             new TH1D("eleHoverE","eleHoverE",10,0,0.14)},
+  {"deltaR",                new TH1D("deltaR","deltaR",10,0,0.01)}
+};
+
+map<string, TH1D*> h_cuts_fail = {
+  {"eleMissHits",           new TH1D("eleMissHits_fail","eleMissHits_fail",10,0,4)},
+  {"eleIP3D",               new TH1D("eleIP3D_fail","eleIP3D_fail",10,0,0.03)},
+  {"eleSigmaIEtaIEta_2012", new TH1D("eleSigmaIEtaIEta_2012_fail","eleSigmaIEtaIEta_2012_fail",10,0,0.02)},
+  {"eledEtaSeedAtVtx",      new TH1D("eledEtaSeedAtVtx_fail","eledEtaSeedAtVtx_fail",20,-0.004,0.004)},
+  {"eledPhiAtVtx",          new TH1D("eledPhiAtVtx_fail","eledPhiAtVtx_fail",10,0,0.08)},
+  {"eleEoverPInv",          new TH1D("eleEoverPInv_fail","eleEoverPInv_fail",10,0,0.04)},
+  {"eleHoverE",             new TH1D("eleHoverE_fail","eleHoverE_fail",10,0,0.14)},
+  {"deltaR",                new TH1D("deltaR_fail","deltaR_fail",10,0,0.01)}
+};
+
 
 unsigned long long keyFromRunLumiEvent(Int_t run,
                                        Int_t lumi,
@@ -125,14 +148,14 @@ void debug_triggerAnalysis_ele_mc(
     // ZtoEE sample
     string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_Zee_quick/251023_023035/0000/",
     string inputHLT = "", //"/afs/cern.ch/user/k/kdeverea/HLTClayton/CMSSW_15_1_0/src/workstation/HLT_emulation/scripts/PbPb/openHLTfiles/",
-    string output_base = "MCZee0_100",
+    string output_base = "MCZee0_100_v2",
 
     // JpsiToEE sample
     //string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_JpsiToEE/251113_150758/0000/",
     //string inputHLT = "",
     //string output_base = "MCJpsiToEE",
 
-    int nfiles = -1,
+    int nfiles = 200,
     float minHiBin = 0.0,
     float maxHiBin = 200.0
   ){
@@ -166,6 +189,9 @@ void debug_triggerAnalysis_ele_mc(
       HiTree    ->Add(this_forest_name.c_str());
     }
   }
+
+  TFile *f_correction = new TFile("output/corrections.root", "READ");
+  TH1D* correction = (TH1D*) f_correction->Get("correction_eledEtaSeedAtVtx");
 
   // hlt files
   //string this_hlt_name = inputHLT + "/*openHLT_Zee_*.root";
@@ -349,31 +375,6 @@ void debug_triggerAnalysis_ele_mc(
   std::cout << "reco entries = " << entriesTmp << std::endl;
 
 
-  // debugging cuts
-  map<string, TH1D*> h_cuts_pass = {
-    {"eleMissHits",           new TH1D("eleMissHits","eleMissHits",10,0,4)},
-    {"eleIP3D",               new TH1D("eleIP3D","eleIP3D",10,0,0.03)},
-    {"eleSigmaIEtaIEta_2012", new TH1D("eleSigmaIEtaIEta_2012","eleSigmaIEtaIEta_2012",10,0,0.02)},
-    {"eledEtaSeedAtVtx",      new TH1D("eledEtaSeedAtVtx","eledEtaSeedAtVtx",10,0,0.004)},
-    {"eledPhiAtVtx",          new TH1D("eledPhiAtVtx","eledPhiAtVtx",10,0,0.08)},
-    {"eleEoverPInv",          new TH1D("eleEoverPInv","eleEoverPInv",10,0,0.04)},
-    {"eleHoverE",             new TH1D("eleHoverE","eleHoverE",10,0,0.14)},
-    {"deltaR",                new TH1D("deltaR","deltaR",10,0,0.01)}
-  };
-
-  map<string, TH1D*> h_cuts_fail = {
-    {"eleMissHits",           new TH1D("eleMissHits_fail","eleMissHits_fail",10,0,4)},
-    {"eleIP3D",               new TH1D("eleIP3D_fail","eleIP3D_fail",10,0,0.03)},
-    {"eleSigmaIEtaIEta_2012", new TH1D("eleSigmaIEtaIEta_2012_fail","eleSigmaIEtaIEta_2012_fail",10,0,0.02)},
-    {"eledEtaSeedAtVtx",      new TH1D("eledEtaSeedAtVtx_fail","eledEtaSeedAtVtx_fail",10,0,0.004)},
-    {"eledPhiAtVtx",          new TH1D("eledPhiAtVtx_fail","eledPhiAtVtx_fail",10,0,0.08)},
-    {"eleEoverPInv",          new TH1D("eleEoverPInv_fail","eleEoverPInv_fail",10,0,0.04)},
-    {"eleHoverE",             new TH1D("eleHoverE_fail","eleHoverE_fail",10,0,0.14)},
-    {"deltaR",                new TH1D("deltaR_fail","deltaR_fail",10,0,0.01)}
-  };
-
-
-
   // ================= Event Loop  =================
 
   // loop through reco objects
@@ -508,6 +509,10 @@ void debug_triggerAnalysis_ele_mc(
     // =============== fill histograms ================
 
     float weight = 1;
+    if (!HLT_HIEle30Gsf) {
+      weight *= correction->GetBinContent(correction->FindBin(eledEtaSeedAtVtx->at(i_leading)));
+      //cout<<"eledEtaSeedAtVtx: "<<eledEtaSeedAtVtx->at(i_leading)<<" weight "<<weight<<endl;
+    }
 
     if(isBarrel) {
 
@@ -537,7 +542,7 @@ void debug_triggerAnalysis_ele_mc(
             if(name == "eleMissHits")           hist->Fill(eleMissHits->at(i_leading));
             if(name == "eleIP3D")               hist->Fill(eleIP3D->at(i_leading));
             if(name == "eleSigmaIEtaIEta_2012") hist->Fill(eleSigmaIEtaIEta_2012->at(i_leading));
-            if(name == "eledEtaSeedAtVtx")      hist->Fill(eledEtaSeedAtVtx->at(i_leading));
+            if(name == "eledEtaSeedAtVtx")      hist->Fill(eledEtaSeedAtVtx->at(i_leading), weight);
             if(name == "eledPhiAtVtx")          hist->Fill(eledPhiAtVtx->at(i_leading));
             if(name == "eleEoverPInv")          hist->Fill(eleEoverPInv->at(i_leading));
             if(name == "eleHoverE")             hist->Fill(eleHoverE->at(i_leading));
@@ -551,7 +556,7 @@ void debug_triggerAnalysis_ele_mc(
             if(name == "eleMissHits")           hist->Fill(eleMissHits->at(i_leading));
             if(name == "eleIP3D")               hist->Fill(eleIP3D->at(i_leading));
             if(name == "eleSigmaIEtaIEta_2012") hist->Fill(eleSigmaIEtaIEta_2012->at(i_leading));
-            if(name == "eledEtaSeedAtVtx")      hist->Fill(eledEtaSeedAtVtx->at(i_leading));
+            if(name == "eledEtaSeedAtVtx")      hist->Fill(eledEtaSeedAtVtx->at(i_leading), weight);
             if(name == "eledPhiAtVtx")          hist->Fill(eledPhiAtVtx->at(i_leading));
             if(name == "eleEoverPInv")          hist->Fill(eleEoverPInv->at(i_leading));
             if(name == "eleHoverE")             hist->Fill(eleHoverE->at(i_leading));
@@ -610,9 +615,18 @@ void debug_triggerAnalysis_ele_mc(
 
 
   // cut debug plots
+  TFile *out_correction = new TFile("output/corrections.root", "RECREATE");
+  vector<TH1D*> corrections;
   for(auto const& [name, hist] : h_cuts_pass) {
+    // plot
     plotCutPassAndFail(hist, h_cuts_fail[name], name);
+
+    // calculate correction, c = pass / fail
+    TH1D * this_correction = (TH1D*)hist->Clone(Form("correction_%s", name.c_str()));
+    this_correction->Divide(h_cuts_fail[name]);
+    this_correction->Write();
   }
+  out_correction->Close();
 
   /*
   r_20->Divide(num_20,denom,1,1,"B");

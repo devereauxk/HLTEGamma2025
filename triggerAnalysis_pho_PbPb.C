@@ -63,23 +63,29 @@ TH1D *h_hiBin = new TH1D("h_hiBin","h_hiBin",250,0,250);
 
 void triggerAnalysis_pho_PbPb(
 
+    string inputForest = " ",
+
     // PbPb data run 399499 quick reco
-    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
     //string inputText = "run399499_forests.txt",
     //string output_base = "DataPbPb0_100_run399499",
     //string plot_label = "Run 399499, HIPhysicsRawPrime0-14",
 
     // PbPb data run 399499 prompt reco
-    //string inputForest = "/eos/cms/store/group/phys_heavyions/nbarnett/Forests/run399499/HIPhysicsRawPrime0/CRAB_UserFiles/crab_forest_PbPb_RP0_run399466_11_15_2025_v1/251115_200501/0000",
     //string inputText = "run399499_prompt_forests.txt",
+    //string output_base = "DataPbPb0_100_run399499_prompt",
+    //string plot_label = "Run 399499, HIPhysicsRawPrime0-9",
+
+    // PbPb data run 399655
+    //string inputText = "run399655_forests.txt",
     //string output_base = "DataPbPb0_100_run399655",
     //string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
 
-    // PbPb data run 399655
-    string inputForest = " /eos/cms/store/group/phys_heavyions/fdamas/2025PbPbForests/ ",
-    string inputText = "run399655_forests.txt",
-    string output_base = "DataPbPb0_100_run399655",
-    string plot_label = "Run 399655, HIPhysicsRawPrime0-9",
+    // PbPb data run 399655, PR 450 more stats    
+    string inputText = "run399655_forests_v2.txt",
+    string output_base = "DataPbPb0_100_run399655_L1plusHLT",
+    string plot_label = "Run 399655, HIPhysicsRawPrime0-19",
+    bool applyMinBiasTrigger = true,
+    bool doL1plusHLTeff = true,
 
     int nfiles = -1,
     float minHiBin = 0.0,
@@ -156,6 +162,7 @@ void triggerAnalysis_pho_PbPb(
 
   // ================= HLT Trees =================
   // forest
+  Int_t           L1_MinimumBias;
   Int_t           L1_SingleEG7;
   Int_t           L1_SingleEG15;
   Int_t           L1_SingleEG21;
@@ -174,6 +181,7 @@ void triggerAnalysis_pho_PbPb(
   HltTree->SetBranchStatus("LumiBlock", 1);
   HltTree->SetBranchStatus("Run", 1);
 
+  HltTree->SetBranchStatus("L1_MinimumBiasZDC1n_Th1_OR_MinimumBiasHF1_AND_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG7_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG15_BptxAND", 1);
   HltTree->SetBranchStatus("L1_SingleEG21_BptxAND", 1);
@@ -187,6 +195,7 @@ void triggerAnalysis_pho_PbPb(
   HltTree->SetBranchAddress("LumiBlock", &forest_LumiBlock);
   HltTree->SetBranchAddress("Run", &forest_Run);
 
+  HltTree->SetBranchAddress("L1_MinimumBiasZDC1n_Th1_OR_MinimumBiasHF1_AND_BptxAND", &L1_MinimumBias);
   HltTree->SetBranchAddress("L1_SingleEG7_BptxAND", &L1_SingleEG7); 
   HltTree->SetBranchAddress("L1_SingleEG15_BptxAND", &L1_SingleEG15);
   HltTree->SetBranchAddress("L1_SingleEG21_BptxAND", &L1_SingleEG21);
@@ -287,9 +296,10 @@ void triggerAnalysis_pho_PbPb(
     EventTree->GetEntry(i_event);
 
     // event cuts
-    if (!dcs.isGood(run, lumi)) continue;
-    if(fabs(vz)>15.0) continue;
-    if(hiBin < minHiBin || hiBin >= maxHiBin) continue;
+    if (!dcs.isGood(run, lumi))                 continue;
+    if(fabs(vz)>15.0)                           continue;
+    if(hiBin < minHiBin || hiBin >= maxHiBin)   continue;
+    if(applyMinBiasTrigger && !L1_MinimumBias)  continue;
 
     h_hiBin->Fill(hiBin);
 
@@ -422,26 +432,32 @@ void triggerAnalysis_pho_PbPb(
   std::cout << "npass_trkrcut = " << npass_trkrcut  << std::endl;
   std::cout << "npass_trigger = " << npass_trigger  << std::endl;
 
-  /*
-  r_20->Divide(num_20,denom,1,1,"B");
-  r_30->Divide(num_30,denom,1,1,"B");
-  r_40->Divide(num_40,denom,1,1,"B");
-  r_50->Divide(num_50,denom,1,1,"B");
-  */
+  if (doL1plusHLTeff) {
+    r_20->Divide(num_20,denom,1,1,"B");
+    r_30->Divide(num_30,denom,1,1,"B");
+    r_40->Divide(num_40,denom,1,1,"B");
+    r_50->Divide(num_50,denom,1,1,"B");
 
-  r_20->Divide(num_20,l1_7,1,1,"B");
-  r_30->Divide(num_30,l1_15,1,1,"B");
-  r_40->Divide(num_40,l1_21,1,1,"B");
-  r_50->Divide(num_50,l1_21,1,1,"B"); 
+    r_20_endcap->Divide(num_20_endcap,denom_endcap,1,1,"B");
+    r_30_endcap->Divide(num_30_endcap,denom_endcap,1,1,"B");
+    r_40_endcap->Divide(num_40_endcap,denom_endcap,1,1,"B");
+    r_50_endcap->Divide(num_50_endcap,denom_endcap,1,1,"B");
+  }
+  else {
+    r_20->Divide(num_20,l1_7,1,1,"B");
+    r_30->Divide(num_30,l1_15,1,1,"B");
+    r_40->Divide(num_40,l1_21,1,1,"B");
+    r_50->Divide(num_50,l1_21,1,1,"B"); 
+
+    r_20_endcap->Divide(num_20_endcap,l1_7_endcap,1,1,"B");
+    r_30_endcap->Divide(num_30_endcap,l1_15_endcap,1,1,"B");
+    r_40_endcap->Divide(num_40_endcap,l1_21_endcap,1,1,"B");
+    r_50_endcap->Divide(num_50_endcap,l1_21_endcap,1,1,"B");
+  }
 
   rl1_7->Divide(l1_7,denom,1,1,"B");
   rl1_15->Divide(l1_15,denom,1,1,"B");
   rl1_21->Divide(l1_21,denom,1,1,"B");
-
-  r_20_endcap->Divide(num_20_endcap,l1_7_endcap,1,1,"B");
-  r_30_endcap->Divide(num_30_endcap,l1_15_endcap,1,1,"B");
-  r_40_endcap->Divide(num_40_endcap,l1_21_endcap,1,1,"B");
-  r_50_endcap->Divide(num_50_endcap,l1_21_endcap,1,1,"B");
 
   r_20->SetLineColor(kRed-4);
   r_30->SetLineColor(kBlue-4);
