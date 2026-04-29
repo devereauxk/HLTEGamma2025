@@ -36,9 +36,13 @@ Recipe to go from Gen-Sim to miniAOD are here: https://codimd.web.cern.ch/URi6op
 ## HLT emulation
 YOU DO NOT NEED TO EMULATE IF THE FOREST IS UPTO DATE WITH THE HLT MENU OR YOU ARE STUDYING DATA.
 
-Emulation is only required if you are studying MC, and the forests you produced do not include HLT paths you want to study. Such is the case when you are testing out a new menu with new paths. Emulation is performed on RECO-level files and reproduces information on L1/HLT trigger descions, as well as (pT, eta, phi) information on the track which fired the trigger. Forests are produced downstream from the same RECO files. The HLT emulation events are matched to forest events  with a special strategy (hash table, etc.) which match on their (run, lumi section, event) information.
+Emulation is only required if you are studying MC, and the forests you produced do not include HLT paths you want to study. Such is the case when you are testing out a new menu with new paths. Emulation is performed on RECO-level files and reproduces information on L1/HLT trigger descions, as well as (pT, eta, phi) information on the track which fired the trigger. Forests are produced downstream from the same RECO files. The HLT emulation events are matched to forest events with their `(run, lumi section, event)` information.
 
-Not implemented here.
+For the electron MC workflow, `triggerAnalysis_ele_mc.C` now supports emulation matching with:
+```
+matchToEmulation : when true, use `inputHLT` reemulation ROOT files instead of same-file `hltobject` trees
+```
+In that mode the analysis scans the full forest, keeps only forest events that have a matching emulation entry, uses the emulation HLT decisions plus emulation `hltobject/...` collections for reco-to-HLT matching, and keeps the forest L1 seed requirement for the denominator.
 
 For implementation follow:
 https://github.com/claytoniousfunk/HLT_emulation/tree/main
@@ -53,7 +57,7 @@ The scripts have inputs
 ```
 inputForest : path to forests you made in the Foresting step
 inputText : path to text file, each line of which is a forest path to analyze
-inputHLT : path to HLT emulation files for matching to forests [not implemented right now]
+inputHLT : path to HLT emulation files for matching to forests when `matchToEmulation=true`
 output_base : name tag to distinguish outputs
 nfiles : total number of forest files to process
 minHiBin : minimum centrality cut, multiply percentage by 2, for example 30% -> minHiBin=60

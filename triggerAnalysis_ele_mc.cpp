@@ -37,6 +37,7 @@ void PrintUsage(const char *self)
     << "  --outputBase <name>    Output tag for plots and ROOT file\n"
     << "  --nametag <label>      Plot label\n"
     << "  --matchToSelf <bool>   Match reco electrons to HLT objects in same forest\n"
+    << "  --matchToEmulation <bool>   Match reco electrons to HLT objects in separate emulation files\n"
     << "  --nfiles <int>         Number of HiForestMiniAOD_<N>.root files to read (-1 for glob)\n"
     << "  --minHiBin <float>     Minimum hiBin\n"
     << "  --maxHiBin <float>     Maximum hiBin\n";
@@ -58,6 +59,7 @@ int main(int argc, char *argv[])
   const std::string outputBase = cl.Get("outputBase", "MCZee0_100_2023PbPbcuts");
   const std::string nametag = cl.Get("nametag", "2025 Pythia8+Hydjet Z->EE");
   const bool matchToSelf = cl.GetBool("matchToSelf", true);
+  const bool matchToEmulation = cl.GetBool("matchToEmulation", false);
   const int nfiles = cl.GetInt("nfiles", 10);
   const float minHiBin = cl.GetDouble("minHiBin", 0.0);
   const float maxHiBin = cl.GetDouble("maxHiBin", 200.0);
@@ -72,6 +74,7 @@ int main(int argc, char *argv[])
     outputBase,
     nametag,
     matchToSelf,
+    matchToEmulation,
     nfiles,
     minHiBin,
     maxHiBin

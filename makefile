@@ -94,3 +94,6 @@ ExecuteRate: HLTrate_ppref.cpp
 
 Execute_triggerAnalysis_ele_mc: triggerAnalysis_ele_mc.cpp triggerAnalysis_ele_mc.C
 	g++ triggerAnalysis_ele_mc.cpp -o Execute_triggerAnalysis_ele_mc `root-config --cflags --libs` -lASImage -std=c++17
+
+Execute_triggerRatio_ele_mc: triggerRatio_ele_mc.cpp
+	g++ triggerRatio_ele_mc.cpp -o Execute_triggerRatio_ele_mc `root-config --cflags --libs` -lASImage -std=c++17

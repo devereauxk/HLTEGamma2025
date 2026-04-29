@@ -1,4 +1,46 @@
+#include <algorithm>
+#include <array>
+#include <dirent.h>
+#include <unordered_map>
+
 using namespace std;
+
+namespace {
+
+constexpr size_t kNL1Paths = 3;
+constexpr size_t kNHLTPaths = 5;
+
+struct HLTObjectCollection {
+  vector<float> pt;
+  vector<float> eta;
+  vector<float> phi;
+};
+
+struct EmulationEvent {
+  array<int, kNHLTPaths> hltPassMask = {0, 0, 0, 0, 0};
+  array<HLTObjectCollection, kNHLTPaths> hltObjects;
+};
+
+vector<string> collectRootFiles(const string &directory)
+{
+  vector<string> files;
+
+  DIR *dir = opendir(directory.c_str());
+  if (!dir) return files;
+
+  while (dirent *entry = readdir(dir)) {
+    string fileName = entry->d_name;
+    if (fileName.size() >= 5 && fileName.substr(fileName.size() - 5) == ".root") {
+      files.push_back(directory + "/" + fileName);
+    }
+  }
+  closedir(dir);
+
+  sort(files.begin(), files.end());
+  return files;
+}
+
+}  // namespace
 
 Float_t PtMin = 2.;
 Float_t PtMax = 110;
@@ -110,6 +152,7 @@ void triggerAnalysis_ele_mc(
     string output_base = "MCZee0_100_2023PbPbcuts",
     string nametag = "2025 Pythia8+Hydjet Z->EE",
     bool matchToSelf = true,
+    bool matchToEmulation = false,
 
     // 2025 ZtoEE sample, embedding with thrOverEEE, thrOverEEB = 0.5 menu
     //string inputForest = "/eos/cms/store/group/phys_heavyions/kdeverea/Run3_PbPb_2025MC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1510pre6/crab_Run3_PbPb_2025MC_ZToEE/251115_102359/0000/",
@@ -147,6 +190,8 @@ void triggerAnalysis_ele_mc(
   std::cout << "input forest directory = " << inputForest  << std::endl;
   std::cout << "input HLT directory    = " << inputHLT  << std::endl;
   std::cout << "output tag             = " << output_base << std::endl;
+  std::cout << "matchToSelf            = " << matchToSelf << std::endl;
+  std::cout << "matchToEmulation       = " << matchToEmulation << std::endl;
 
   TChain *HltTree = new TChain("hltanalysis/HltTree");
   TChain *EventTree = new TChain("ggHiNtuplizer/EventTree");
@@ -271,6 +316,97 @@ void triggerAnalysis_ele_mc(
   vector<vector<float>*>   HLTObject_phi = {Ele15Gsf_phi, Ele20Gsf_phi, Ele30Gsf_phi, Ele40Gsf_phi, Ele50Gsf_phi};
   vector<TTree*> currentHLTObjectTrees(HLTObjectTreeNames.size(), nullptr);
   int currentHLTTreeNumber = -1;
+  unordered_map<unsigned long long, EmulationEvent> emulationEventMap;
+  const bool useForestHLTObjects = matchToSelf && !matchToEmulation;
+  const array<string, kNHLTPaths> EmulationHLTBranchNames = {
+    "HLT_HIEle15Gsf_v",
+    "HLT_HIEle20Gsf_v",
+    "HLT_HIEle30Gsf_v",
+    "HLT_HIEle40Gsf_v",
+    "HLT_HIEle50Gsf_v"
+  };
+
+  if (matchToEmulation) {
+    if (inputHLT.empty()) {
+      std::cerr << "matchToEmulation requires --inputHLT." << std::endl;
+      return;
+    }
+
+    const vector<string> emulationFiles = collectRootFiles(inputHLT);
+    if (emulationFiles.empty()) {
+      std::cerr << "No emulation ROOT files found in " << inputHLT << std::endl;
+      return;
+    }
+
+    std::cout << "Indexing emulation files..." << std::endl;
+    for (const string &emulationFileName : emulationFiles) {
+      TFile emulationFile(emulationFileName.c_str(), "READ");
+      TTree *emulationHltTree = dynamic_cast<TTree*>(emulationFile.Get("hltanalysis/HltTree"));
+      if (!emulationHltTree) {
+        std::cerr << "Missing hltanalysis/HltTree in " << emulationFileName << std::endl;
+        return;
+      }
+
+      vector<TTree*> emulationObjectTrees(HLTObjectTreeNames.size(), nullptr);
+      array<vector<float>*, kNHLTPaths> emulationObjectPt = {nullptr, nullptr, nullptr, nullptr, nullptr};
+      array<vector<float>*, kNHLTPaths> emulationObjectEta = {nullptr, nullptr, nullptr, nullptr, nullptr};
+      array<vector<float>*, kNHLTPaths> emulationObjectPhi = {nullptr, nullptr, nullptr, nullptr, nullptr};
+
+      for (int i_hlt = 0; i_hlt < HLTObjectTreeNames.size(); i_hlt++) {
+        emulationObjectTrees[i_hlt] = dynamic_cast<TTree*>(emulationFile.Get(HLTObjectTreeNames.at(i_hlt).c_str()));
+        if (!emulationObjectTrees[i_hlt]) {
+          std::cerr << "Missing emulation HLT object tree " << HLTObjectTreeNames.at(i_hlt)
+                    << " in file " << emulationFileName << std::endl;
+          return;
+        }
+
+        emulationObjectTrees[i_hlt]->SetBranchStatus("*",0);
+        emulationObjectTrees[i_hlt]->SetBranchStatus("pt", 1);
+        emulationObjectTrees[i_hlt]->SetBranchStatus("eta", 1);
+        emulationObjectTrees[i_hlt]->SetBranchStatus("phi", 1);
+        emulationObjectTrees[i_hlt]->SetBranchAddress("pt", &emulationObjectPt.at(i_hlt));
+        emulationObjectTrees[i_hlt]->SetBranchAddress("eta", &emulationObjectEta.at(i_hlt));
+        emulationObjectTrees[i_hlt]->SetBranchAddress("phi", &emulationObjectPhi.at(i_hlt));
+      }
+
+      ULong64_t emulationEvent = 0;
+      Int_t emulationLumiBlock = 0;
+      Int_t emulationRun = 0;
+      array<Bool_t, kNHLTPaths> emulationHLTPassMask = {false, false, false, false, false};
+
+      emulationHltTree->SetBranchStatus("*",0);
+      emulationHltTree->SetBranchStatus("Event", 1);
+      emulationHltTree->SetBranchStatus("LumiBlock", 1);
+      emulationHltTree->SetBranchStatus("Run", 1);
+      emulationHltTree->SetBranchAddress("Event", &emulationEvent);
+      emulationHltTree->SetBranchAddress("LumiBlock", &emulationLumiBlock);
+      emulationHltTree->SetBranchAddress("Run", &emulationRun);
+
+      for (int i_hlt = 0; i_hlt < EmulationHLTBranchNames.size(); i_hlt++) {
+        emulationHltTree->SetBranchStatus(EmulationHLTBranchNames.at(i_hlt).c_str(), 1);
+        emulationHltTree->SetBranchAddress(EmulationHLTBranchNames.at(i_hlt).c_str(), &emulationHLTPassMask.at(i_hlt));
+      }
+
+      for (Long64_t i_entry = 0; i_entry < emulationHltTree->GetEntries(); ++i_entry) {
+        emulationHltTree->GetEntry(i_entry);
+        for (auto tree : emulationObjectTrees) tree->GetEntry(i_entry);
+
+        EmulationEvent thisEvent;
+        for (int i_hlt = 0; i_hlt < kNHLTPaths; i_hlt++) {
+          thisEvent.hltPassMask.at(i_hlt) = emulationHLTPassMask.at(i_hlt);
+        }
+        for (int i_hlt = 0; i_hlt < HLTObjectTreeNames.size(); i_hlt++) {
+          if (emulationObjectPt.at(i_hlt)) thisEvent.hltObjects.at(i_hlt).pt = *emulationObjectPt.at(i_hlt);
+          if (emulationObjectEta.at(i_hlt)) thisEvent.hltObjects.at(i_hlt).eta = *emulationObjectEta.at(i_hlt);
+          if (emulationObjectPhi.at(i_hlt)) thisEvent.hltObjects.at(i_hlt).phi = *emulationObjectPhi.at(i_hlt);
+        }
+
+        const unsigned long long key = keyFromRunLumiEvent(emulationRun, emulationLumiBlock, emulationEvent);
+        emulationEventMap[key] = thisEvent;
+      }
+    }
+    std::cout << "Indexed " << emulationEventMap.size() << " emulation events" << std::endl;
+  }
 
 
   // ================= Event Tree =================
@@ -368,6 +504,7 @@ void triggerAnalysis_ele_mc(
   int npass_probe = 0;
   int npass_l1 = 0;
   int npass_trigger = 0;
+  int nmatched_emulation_events = 0;
   for (ULong64_t i_event = 0; i_event < HltTree->GetEntries(); ++i_event){
 
     if(i_event%(HltTree->GetEntries()/500)==0) std::cout << "Processing entry " << i_event << " / " << entriesTmp << "\r" << std::flush;
@@ -386,10 +523,19 @@ void triggerAnalysis_ele_mc(
     if(fabs(vz)>15.0) continue;
     if(hiBin < minHiBin || hiBin >= maxHiBin) continue;
 
+    const EmulationEvent *currentEmulationEvent = nullptr;
+    if (matchToEmulation) {
+      const unsigned long long eventKey = keyFromRunLumiEvent(forest_Run, forest_LumiBlock, forest_Event);
+      auto emulationMatch = emulationEventMap.find(eventKey);
+      if (emulationMatch == emulationEventMap.end()) continue;
+      currentEmulationEvent = &emulationMatch->second;
+      nmatched_emulation_events++;
+    }
+
     neles += nEle;
 
     // ================ get hltobject entry from current file =================
-    if (matchToSelf) {
+    if (useForestHLTObjects) {
       if (HltTree->GetTreeNumber() != currentHLTTreeNumber) {
         currentHLTTreeNumber = HltTree->GetTreeNumber();
         TFile *currentFile = HltTree->GetCurrentFile();
@@ -462,10 +608,15 @@ void triggerAnalysis_ele_mc(
       float recoPt = elePt->at(i_track);
       float weight = pthat_weight;
 
-      vector<int> HLTPassMask = {HLT_HIEle15Gsf, HLT_HIEle20Gsf, HLT_HIEle30Gsf, HLT_HIEle40Gsf, HLT_HIEle50Gsf};
-      vector<bool> HLTObjectMatchMask = {true, true, true, true, true};
+      array<int, kNL1Paths> L1PassMask = {L1_SingleEG7, L1_SingleEG15, L1_SingleEG21};
+      array<int, kNHLTPaths> HLTPassMask = {HLT_HIEle15Gsf, HLT_HIEle20Gsf, HLT_HIEle30Gsf, HLT_HIEle40Gsf, HLT_HIEle50Gsf};
+      array<bool, kNHLTPaths> HLTObjectMatchMask = {true, true, true, true, true};
 
-      if (matchToSelf) {
+      if (matchToEmulation) {
+        HLTPassMask = currentEmulationEvent->hltPassMask;
+      }
+
+      if (useForestHLTObjects) {
         for (int i_hlt = 0; i_hlt < currentHLTObjectTrees.size(); i_hlt++) {
           float bestDR = 999.;
           for (int j_hlt = 0; j_hlt < HLTObject_pt.at(i_hlt)->size(); j_hlt++) {
@@ -477,18 +628,31 @@ void triggerAnalysis_ele_mc(
           HLTObjectMatchMask[i_hlt] = bestDR < 0.1;
         }
       }
+      else if (matchToEmulation) {
+        for (int i_hlt = 0; i_hlt < HLTObjectTreeNames.size(); i_hlt++) {
+          float bestDR = 999.;
+          const HLTObjectCollection &emulationObjects = currentEmulationEvent->hltObjects.at(i_hlt);
+          for (int j_hlt = 0; j_hlt < emulationObjects.pt.size(); j_hlt++) {
+            float dEta = eleEta->at(i_track) - emulationObjects.eta.at(j_hlt);
+            float dPhi = deltaPhi(elePhi->at(i_track), emulationObjects.phi.at(j_hlt));
+            float dR = sqrt(dEta*dEta + dPhi*dPhi);
+            if (dR < bestDR) bestDR = dR;
+          }
+          HLTObjectMatchMask[i_hlt] = bestDR < 0.1;
+        }
+      }
 
       if(isBarrel) {
 
         denom->Fill(recoPt, weight);
 
-        if(L1_SingleEG7) {
+        if(L1PassMask[0]) {
           l1_7->Fill(recoPt, weight);
           npass_l1++;
           if(HLTPassMask[0] && HLTObjectMatchMask[0]) num_15->Fill(recoPt, weight);
         }
 
-        if(L1_SingleEG15) {
+        if(L1PassMask[1]) {
           l1_15->Fill(recoPt, weight);
           if(HLTPassMask[1] && HLTObjectMatchMask[1]) {
             num_20->Fill(recoPt, weight);
@@ -497,13 +661,13 @@ void triggerAnalysis_ele_mc(
           if(HLTPassMask[2] && HLTObjectMatchMask[2]) num_30->Fill(recoPt, weight);
         }
 
-        if(L1_SingleEG21) {
+        if(L1PassMask[2]) {
           l1_21->Fill(recoPt, weight);
           if(HLTPassMask[3] && HLTObjectMatchMask[3]) num_40->Fill(recoPt, weight);
           if(HLTPassMask[4] && HLTObjectMatchMask[4]) num_50->Fill(recoPt, weight);
         }
 
-        if(L1_SingleEG15 && !(HLTPassMask[2] && HLTObjectMatchMask[2]) && recoPt > 50) {
+        if(L1PassMask[1] && !(HLTPassMask[2] && HLTObjectMatchMask[2]) && recoPt > 50) {
           h2_missedEtaPhi->Fill(elePhi->at(i_track), eleEta->at(i_track));
         }
 
@@ -513,18 +677,18 @@ void triggerAnalysis_ele_mc(
 
         denom_endcap->Fill(recoPt, weight);
 
-        if(L1_SingleEG7) {
+        if(L1PassMask[0]) {
           l1_7_endcap->Fill(recoPt, weight);
           if(HLTPassMask[0] && HLTObjectMatchMask[0]) num_15_endcap->Fill(recoPt, weight);
         }
 
-        if(L1_SingleEG15) {
+        if(L1PassMask[1]) {
           l1_15_endcap->Fill(recoPt, weight);
           if(HLTPassMask[1] && HLTObjectMatchMask[1]) num_20_endcap->Fill(recoPt, weight);
           if(HLTPassMask[2] && HLTObjectMatchMask[2]) num_30_endcap->Fill(recoPt, weight);
         }
 
-        if(L1_SingleEG21) {
+        if(L1PassMask[2]) {
           l1_21_endcap->Fill(recoPt, weight);
           if(HLTPassMask[3] && HLTObjectMatchMask[3]) num_40_endcap->Fill(recoPt, weight);
           if(HLTPassMask[4] && HLTObjectMatchMask[4]) num_50_endcap->Fill(recoPt, weight);
@@ -542,6 +706,9 @@ void triggerAnalysis_ele_mc(
   std::cout << "npass_probe = " << npass_probe  << std::endl;
   std::cout << "npass_l1 = " << npass_l1  << std::endl;
   std::cout << "npass_trigger = " << npass_trigger  << std::endl;
+  if (matchToEmulation) {
+    std::cout << "nmatched_emulation_events = " << nmatched_emulation_events << std::endl;
+  }
 
   /*
   r_20->Divide(num_20,denom,1,1,"B");
@@ -700,7 +867,10 @@ void triggerAnalysis_ele_mc(
   r_20_endcap->GetYaxis()->SetRangeUser(0,1.05);
   r_20_endcap->GetXaxis()->SetTitle("Reco electron #font[52]{p}_{T} [GeV]");
   r_20_endcap->GetYaxis()->SetTitle("Trigger efficiency");
+  r_15_endcap->SetTitle("");
+  r_15_endcap->SetStats(0);
   TLegend *leg_endcap = new TLegend(0.55,0.3,0.88,0.5);
+  leg_endcap->AddEntry(r_15_endcap,"HLT_HIEle15Gsf");
   leg_endcap->AddEntry(r_20_endcap,"HLT_HIEle20Gsf");
   leg_endcap->AddEntry(r_30_endcap,"HLT_HIEle30Gsf");
   leg_endcap->AddEntry(r_40_endcap,"HLT_HIEle40Gsf");
@@ -711,6 +881,7 @@ void triggerAnalysis_ele_mc(
   r_30_endcap->Draw("same");
   r_40_endcap->Draw("same");
   r_50_endcap->Draw("same");
+  r_15_endcap->Draw("same");
 
   TLatex *la_endcap = new TLatex();
   la_endcap->SetTextFont(42);
@@ -804,6 +975,7 @@ void triggerAnalysis_ele_mc(
   denom->Write();
   denom_endcap->Write();
 
+  num_15->Write();
   num_20->Write();
   num_30->Write();
   num_40->Write();
@@ -813,6 +985,7 @@ void triggerAnalysis_ele_mc(
   l1_15->Write();
   l1_21->Write();
 
+  num_15_endcap->Write();
   num_20_endcap->Write();
   num_30_endcap->Write();
   num_40_endcap->Write();
@@ -822,11 +995,13 @@ void triggerAnalysis_ele_mc(
   l1_15_endcap->Write();
   l1_21_endcap->Write();
 
+  r_15->Write();
   r_20->Write();
   r_30->Write();
   r_40->Write();
   r_50->Write();
 
+  r_15_endcap->Write();
   r_20_endcap->Write();
   r_30_endcap->Write();
   r_40_endcap->Write();
