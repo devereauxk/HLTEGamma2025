@@ -8,11 +8,11 @@ Forest production happens in `./Forest Submission`. For the 2025 PbPb run we use
 cmsrel CMSSW_15_1_0
 cd CMSSW_15_1_0/src
 cmsenv
-git cms-merge-topic CmsHI:forest_CMSSW_15_1_X
+git cms-merge-topic CmsHI:forest_CMSSW_15_1_X  #(resp. CMSSW_16_1_X for 2026 PbPb MC)
 scram build -j4
 voms-proxy-init --voms cms --valid 168:00
 ```
-CRAB file to submit foresting jobs is at `forest_CRABConfig_Run3_PbPb_MC.py`. Change the input minAOD path and output parameters. Also change the Global Tag (GT) and Configuration in `forest_CMSSWConfig_Run3_PbPb_MC_miniAOD.py` to the most up-to-date choices. For HLT studies ensure the forests to have the following information:
+CRAB file to submit foresting jobs is at `forest_CRABConfig_Run3_PbPb_2025MC.py`. Change the input minAOD path and output parameters. Also change the Global Tag (GT) and Configuration in `forest_CMSSWConfig_Run3_PbPb_2025MC_miniAOD.py` to the most up-to-date choices. For HLT studies ensure the forests to have the following information:
 ```
 hltanalysis : info on L1 and HLT triggers that fire
 hiEvtAnalyzer : event-level information
