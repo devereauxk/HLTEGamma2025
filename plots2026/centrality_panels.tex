@@ -1,0 +1,133 @@
+% Compile from plots2026/:  pdflatex centrality_panels.tex
+% Output: centrality_panels.pdf  (10 pages, one per sample+region combination)
+%
+% Pages:
+%   1  ele   DY        barrel
+%   2  ele   DY        endcap
+%   3  ele   J/psi->ee barrel
+%   4  ele   J/psi->ee endcap
+%   5  pho/e DY        barrel
+%   6  pho/e DY        endcap
+%   7  pho/e J/psi->ee barrel
+%   8  pho/e J/psi->ee endcap
+%   9  pho   QCDPhoton barrel
+%  10  pho   QCDPhoton endcap
+%
+% To extract individual PDFs (requires pdftk):
+%   pdftk centrality_panels.pdf burst output page_%02d.pdf
+
+\documentclass{article}
+\usepackage[
+  paperwidth=27cm,
+  paperheight=9.0cm,
+  top=2mm, bottom=2mm,
+  left=2mm, right=2mm
+]{geometry}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{caption}
+
+\pagestyle{empty}
+
+\captionsetup[subfigure]{
+  labelformat  = empty,
+  justification= centering,
+  font         = small,
+  skip         = 1pt
+}
+
+% ------------------------------------------------------------------
+%  Helper: 1x3 panel  \panel{Title}{file_0-100}{file_0-30}{file_60-100}
+% ------------------------------------------------------------------
+\newcommand{\panel}[4]{%
+  \begin{figure}[h!]
+    \centering
+    {\small\textbf{#1}}\\[0.5mm]
+    \begin{subfigure}[b]{0.3333\linewidth}%
+      \includegraphics[width=\linewidth]{#2}%
+      \caption*{0--100\%}%
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.3333\linewidth}%
+      \includegraphics[width=\linewidth]{#3}%
+      \caption*{0--30\%}%
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.3333\linewidth}%
+      \includegraphics[width=\linewidth]{#4}%
+      \caption*{30--100\%}%
+    \end{subfigure}%
+  \end{figure}%
+}
+
+% ==================================================================
+\begin{document}
+
+% ---- 1: ele DY barrel ----
+\panel{Electron trigger efficiency --- DY (MadGraph+Hydjet 2026) --- Barrel}{%
+  TriggerEfficiency_ele_MCDY2026_0_100_barrel.png}{%
+  TriggerEfficiency_ele_MCDY2026_0_30_barrel.png}{%
+  TriggerEfficiency_ele_MCDY2026_60_100_barrel.png}
+\newpage
+
+% ---- 2: ele DY endcap ----
+\panel{Electron trigger efficiency --- DY (MadGraph+Hydjet 2026) --- Endcap}{%
+  TriggerEfficiency_ele_MCDY2026_0_100_endcap.png}{%
+  TriggerEfficiency_ele_MCDY2026_0_30_endcap.png}{%
+  TriggerEfficiency_ele_MCDY2026_60_100_endcap.png}
+\newpage
+
+% ---- 3: ele J/psi->ee barrel ----
+\panel{Electron trigger efficiency --- J/$\psi$$\to$ee (Pythia8+Hydjet 2026) --- Barrel}{%
+  TriggerEfficiency_ele_MCJpsiToEE2026_0_100_barrel.png}{%
+  TriggerEfficiency_ele_MCJpsiToEE2026_0_30_barrel.png}{%
+  TriggerEfficiency_ele_MCJpsiToEE2026_60_100_barrel.png}
+\newpage
+
+% ---- 4: ele J/psi->ee endcap ----
+\panel{Electron trigger efficiency --- J/$\psi$$\to$ee (Pythia8+Hydjet 2026) --- Endcap}{%
+  TriggerEfficiency_ele_MCJpsiToEE2026_0_100_endcap.png}{%
+  TriggerEfficiency_ele_MCJpsiToEE2026_0_30_endcap.png}{%
+  TriggerEfficiency_ele_MCJpsiToEE2026_60_100_endcap.png}
+\newpage
+
+% ---- 5: pho/ele DY barrel ----
+\panel{Photon/Electron trigger efficiency --- DY (MadGraph+Hydjet 2026) --- Barrel}{%
+  TriggerEfficiency_phoOverEle_MCDY2026_0_100_barrel.png}{%
+  TriggerEfficiency_phoOverEle_MCDY2026_0_30_barrel.png}{%
+  TriggerEfficiency_phoOverEle_MCDY2026_60_100_barrel.png}
+\newpage
+
+% ---- 6: pho/ele DY endcap ----
+\panel{Photon/Electron trigger efficiency --- DY (MadGraph+Hydjet 2026) --- Endcap}{%
+  TriggerEfficiency_phoOverEle_MCDY2026_0_100_endcap.png}{%
+  TriggerEfficiency_phoOverEle_MCDY2026_0_30_endcap.png}{%
+  TriggerEfficiency_phoOverEle_MCDY2026_60_100_endcap.png}
+\newpage
+
+% ---- 7: pho/ele J/psi->ee barrel ----
+\panel{Photon/Electron trigger efficiency --- J/$\psi$$\to$ee (Pythia8+Hydjet 2026) --- Barrel}{%
+  TriggerEfficiency_phoOverEle_MCJpsiToEE2026_0_100_barrel.png}{%
+  TriggerEfficiency_phoOverEle_MCJpsiToEE2026_0_30_barrel.png}{%
+  TriggerEfficiency_phoOverEle_MCJpsiToEE2026_60_100_barrel.png}
+\newpage
+
+% ---- 8: pho/ele J/psi->ee endcap ----
+\panel{Photon/Electron trigger efficiency --- J/$\psi$$\to$ee (Pythia8+Hydjet 2026) --- Endcap}{%
+  TriggerEfficiency_phoOverEle_MCJpsiToEE2026_0_100_endcap.png}{%
+  TriggerEfficiency_phoOverEle_MCJpsiToEE2026_0_30_endcap.png}{%
+  TriggerEfficiency_phoOverEle_MCJpsiToEE2026_60_100_endcap.png}
+\newpage
+
+% ---- 9: pho QCDPhoton barrel ----
+\panel{Photon trigger efficiency --- QCDPhoton (Pythia8+Hydjet 2026) --- Barrel}{%
+  TriggerEfficiency_pho_MCQCDPhoton2026_0_100_barrel.png}{%
+  TriggerEfficiency_pho_MCQCDPhoton2026_0_30_barrel.png}{%
+  TriggerEfficiency_pho_MCQCDPhoton2026_60_100_barrel.png}
+\newpage
+
+% ---- 10: pho QCDPhoton endcap ----
+\panel{Photon trigger efficiency --- QCDPhoton (Pythia8+Hydjet 2026) --- Endcap}{%
+  TriggerEfficiency_pho_MCQCDPhoton2026_0_100_endcap.png}{%
+  TriggerEfficiency_pho_MCQCDPhoton2026_0_30_endcap.png}{%
+  TriggerEfficiency_pho_MCQCDPhoton2026_60_100_endcap.png}
+
+\end{document}

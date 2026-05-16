@@ -20,6 +20,12 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         # qcd photon
         '/store/user/fdamas/PbPb2026/RunPrepMC/PhotonQCD_pTHatMin20_HydjetEmbedded_1610pre3/PATwith161pre3_151X_mcRun3_2025_realistic_HI_v5/260401_165120/0000/step4_PAT_1.root'
+
+        # jpsi
+        # /store/user/fdamas/PbPb2026/RunPrepMC/JpsiDielectron_pTHatMin4_HydjetEmbedded_Pythia8_TuneCP5_1610pre3/PATwith161pre3_151X_mcRun3_2025_realistic_HI_v5/260402_090145/0000/step4_PAT_1.root
+
+        # DY
+        # /store/user/fdamas/PbPb2026/RunPrepMC/DrellYan_HighMass_MadGraph_HydjetEmbedded_1610pre3/PATwith161pre4_151X_mcRun3_2025_realistic_HI_v5/260420_113941/0000/step4_PAT_1.root
     ),
 )
 

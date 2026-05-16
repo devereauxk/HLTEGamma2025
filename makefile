@@ -92,8 +92,25 @@ RunRate: ExecuteRate
 ExecuteRate: HLTrate_ppref.cpp
 	g++ HLTrate_ppref.cpp -o Execute_HLTrate_ppref `root-config --cflags --libs` -lASImage -std=c++17
 
-Execute_triggerAnalysis_ele_mc: triggerAnalysis_ele_mc.cpp triggerAnalysis_ele_mc.C
+Execute_triggerAnalysis_ele_mc: triggerAnalysis_ele_mc.cpp triggerAnalysis_ele_mc.C include/CommandLine.h
 	g++ triggerAnalysis_ele_mc.cpp -o Execute_triggerAnalysis_ele_mc `root-config --cflags --libs` -lASImage -std=c++17
+
+Execute_triggerAnalysis_pho_mc: triggerAnalysis_pho_mc.cpp triggerAnalysis_pho_mc.C include/CommandLine.h
+	g++ triggerAnalysis_pho_mc.cpp -o Execute_triggerAnalysis_pho_mc `root-config --cflags --libs` -lASImage -std=c++17
+
+Execute_triggerAnalysis_ele_data: triggerAnalysis_ele_data.cpp triggerAnalysis_ele_PbPb.C include/CommandLine.h
+	g++ triggerAnalysis_ele_data.cpp -o Execute_triggerAnalysis_ele_data `root-config --cflags --libs` -lASImage -std=c++17
+
+Execute_triggerAnalysis_pho_data: triggerAnalysis_pho_data.cpp triggerAnalysis_pho_PbPb.C include/CommandLine.h
+	g++ triggerAnalysis_pho_data.cpp -o Execute_triggerAnalysis_pho_data `root-config --cflags --libs` -lASImage -std=c++17
+
+Execute_triggerAnalysis_pho_over_ele_data: triggerAnalysis_pho_over_ele_data.cpp triggerAnalysis_pho_over_ele_PbPb.C include/CommandLine.h
+	g++ triggerAnalysis_pho_over_ele_data.cpp -o Execute_triggerAnalysis_pho_over_ele_data `root-config --cflags --libs` -lASImage -std=c++17
+
+Execute_triggerAnalysis_pho_over_ele_mc: triggerAnalysis_pho_over_ele_mc.cpp triggerAnalysis_pho_over_ele_mc.C include/CommandLine.h
+	g++ triggerAnalysis_pho_over_ele_mc.cpp -o Execute_triggerAnalysis_pho_over_ele_mc `root-config --cflags --libs` -lASImage -std=c++17
+
+TriggerAnalysis: Execute_triggerAnalysis_ele_mc Execute_triggerAnalysis_pho_mc Execute_triggerAnalysis_pho_over_ele_mc Execute_triggerAnalysis_ele_data Execute_triggerAnalysis_pho_data Execute_triggerAnalysis_pho_over_ele_data
 
 Execute_triggerRatio_ele_mc: triggerRatio_ele_mc.cpp
 	g++ triggerRatio_ele_mc.cpp -o Execute_triggerRatio_ele_mc `root-config --cflags --libs` -lASImage -std=c++17

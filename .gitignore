@@ -4,6 +4,8 @@
 *.txt
 *.log
 *.err
+*.out
+*.aux
 RateMonitoring
 CMSSW_*
 *_pycache_*
